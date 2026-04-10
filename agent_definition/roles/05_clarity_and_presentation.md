@@ -169,9 +169,9 @@ Be particularly thoughtful about:
 
 ---
 
-## Output Format
+## Role-Specific Subsections
 
-Structure your evaluation as follows:
+Also include the following sections in your final review. Preserve these section names and verdict scales exactly — they are specific to this role's evaluation lens.
 
 ```
 ### First-Pass Readability

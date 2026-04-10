@@ -180,9 +180,9 @@ But even low-risk papers should have a minimal ethics consideration — the ques
 
 ---
 
-## Output Format
+## Role-Specific Subsections
 
-Structure your evaluation as follows:
+Also include the following sections in your final review. Preserve these section names and verdict scales exactly — they are specific to this role's evaluation lens.
 
 ```
 ### Bias and Fairness Assessment

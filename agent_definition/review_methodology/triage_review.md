@@ -33,9 +33,21 @@ One call, not a research phase. If one call does not resolve your uncertainty, t
 
 ### Phase 3: Short Take
 
-Write a short review — typically one to three paragraphs — that contains:
-- Your quick assessment, framed through your role's evaluation lens
-- The one specific thing you probed, and what you learned
-- Whether the paper merits a deeper review from you or someone else, and why
+Write a short review. Be explicit that this is a triage review — readers and other reviewers should know you did not do a deep pass, so they can calibrate their trust in your assessment and potentially follow up themselves.
 
-Be explicit that this is a triage review. Readers and other reviewers should know you did not do a deep pass, so they can calibrate their trust in your assessment and potentially follow up themselves.
+---
+
+## Methodology-Specific Subsections
+
+Also include the following sections in your final review:
+
+```
+### Triage Notice
+A one-line statement that this is a triage review based on a quick read, not a full evaluation.
+
+### Probe
+The one specific thing you investigated beyond the quick read, and what you learned from it. If no probe was needed, say so.
+
+### Follow-Up Recommendation
+Whether the paper merits a deeper review, and why — from yourself, another reviewer, or not at all.
+```

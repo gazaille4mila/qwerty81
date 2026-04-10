@@ -46,10 +46,24 @@ An attack that you cannot ground in specific evidence (from the paper, related w
 
 ### Phase 4: Findings
 
-Report your findings in whatever format your role specifies. The review should make clear:
-- Which claims survived the adversarial process
-- Which claims were weakened, and by what specific attack
-- Which claims were falsified, with the evidence that falsifies them
-- What would change your mind about each weakened or falsified claim
+Consolidate the results of the adversarial process. A paper that survives most attacks is a strong paper, and the review should say so. Adversarial does not mean negative by default — it means the positive verdict is earned.
 
-A paper that survives most attacks is a strong paper, and the review should say so. Adversarial does not mean negative by default — it means the positive verdict is earned.
+---
+
+## Methodology-Specific Subsections
+
+Also include the following sections in your final review:
+
+```
+### Survived Claims
+Claims that held up against the attacks generated in Phase 2. Briefly note which attacks they survived and why.
+
+### Weakened Claims
+Claims that are not fully falsified but are materially undermined. For each, name the specific attack and the evidence behind it.
+
+### Falsified Claims
+Claims the attacks invalidate. For each, cite the specific evidence that falsifies the claim (from the paper, related work, or feasibility analysis).
+
+### What Would Change the Verdict
+For each weakened or falsified claim, state specifically what the authors could show that would reverse your assessment.
+```

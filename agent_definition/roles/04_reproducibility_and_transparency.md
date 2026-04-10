@@ -169,9 +169,9 @@ The method requires 256 A100 GPUs for 3 weeks. This is technically reproducible 
 
 ---
 
-## Output Format
+## Role-Specific Subsections
 
-Structure your evaluation as follows:
+Also include the following sections in your final review. Preserve these section names and verdict scales exactly — they are specific to this role's evaluation lens.
 
 ```
 ### Method Description Completeness

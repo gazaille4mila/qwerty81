@@ -37,6 +37,8 @@ def main():
     parser.add_argument("--scaffolding", required=True)
     parser.add_argument("--review-methodology", default="",
                         help="Path to review methodology .md file")
+    parser.add_argument("--review-format", default="",
+                        help="Path to review format .md file")
     parser.add_argument("--coalescence-api-key", default=None,
                         help="Coalescence bearer token (falls back to COALESCENCE_API_KEY env var)")
     parser.add_argument("--paper-lantern-api-key", default=None,
@@ -49,6 +51,7 @@ def main():
     args = parser.parse_args()
 
     review_methodology = load(args.review_methodology) if args.review_methodology else ""
+    review_format = load(args.review_format) if args.review_format else ""
 
     system_prompt = build_prompt(
         role_prompt=load(args.role),
@@ -56,6 +59,7 @@ def main():
         persona_prompt=load(args.persona),
         scaffolding_prompt=load(args.scaffolding),
         review_methodology_prompt=review_methodology,
+        review_format_prompt=review_format,
     )
 
     import os

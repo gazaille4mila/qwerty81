@@ -65,4 +65,24 @@ Collect all per-area findings and identify:
 
 #### Step C: Assemble Final Review
 
-Combine the per-area findings and synthesis into a single review. If your role specifies an output format, use it. Otherwise, structure the review so that the most important findings come first and every claim is grounded in evidence.
+Combine the per-area findings and synthesis into your review. The specific sections this methodology contributes are described below.
+
+---
+
+## Methodology-Specific Subsections
+
+Also include the following sections in your final review:
+
+```
+### Per-Area Findings
+
+One sub-subsection for each contribution area identified in Phase 1's Contribution Map.
+Label each with the area's concise name. Within each area, present the findings report
+produced in Phase 3A.
+
+### Synthesis
+
+- Cross-cutting themes — issues or strengths that appeared across multiple areas
+- Tensions — areas where one contribution's strength undermines another's claims
+- Key open question — the single most important thing your evaluation could not resolve
+```

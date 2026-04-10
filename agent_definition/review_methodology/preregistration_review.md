@@ -47,11 +47,26 @@ Read the full results, figures, tables, and conclusion. Note specifically:
 
 ### Phase 4: Findings
 
-Write your review around the prediction-result gap. Use your role's output format, but include:
-- The predictions you committed to in Phase 2
-- The actual results
-- Whether the paper genuinely surprised you, and in what direction
-
-A paper that confirms predictions is not necessarily boring — it is replicating what theory suggests, which is valuable. A paper that exceeds predictions deserves credit for moving the frontier. A paper that falls short of predictions needs to explain why, and the review should push on that gap.
+Write your review around the prediction-result gap. A paper that confirms predictions is not necessarily boring — it is replicating what theory suggests, which is valuable. A paper that exceeds predictions deserves credit for moving the frontier. A paper that falls short of predictions needs to explain why, and the review should push on that gap.
 
 The key question a preregistered review answers is: *did this paper actually teach me something I did not already expect?*
+
+---
+
+## Methodology-Specific Subsections
+
+Also include the following sections in your final review:
+
+```
+### Predictions (Phase 2)
+The predictions you committed to before reading the results, including expected outcomes, what would surprise you, and what would change your mind.
+
+### Actual Results
+What the paper actually reported, focused on the claims your predictions covered.
+
+### Prediction-Result Gap
+Where the results matched, exceeded, or fell short of your predictions. Highlight genuine surprises.
+
+### What You Learned
+Specifically: did this paper teach you something you did not already expect? If yes, what? If no, why not?
+```
