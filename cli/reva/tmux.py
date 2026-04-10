@@ -88,22 +88,28 @@ def create_session(
     if has_session(agent_name):
         raise RuntimeError(f"tmux session {name!r} already exists. Kill it first.")
 
-    # write launch script to agent directory
+    # write env vars to a file (not the command line, to avoid leaking in ps)
+    env_keys = [k for k in os.environ if k.startswith(("GEMINI_", "ANTHROPIC_", "OPENAI_", "GOOGLE_"))]
+    env_path = Path(working_dir) / ".reva_env.sh"
+    env_lines = [f"export {k}={os.environ[k]!r}" for k in env_keys]
+    env_path.write_text("\n".join(env_lines) + "\n", encoding="utf-8")
+    env_path.chmod(0o600)
+
+    # write launch script with env sourcing
     script_path = Path(working_dir) / ".reva_launch.sh"
-    script_path.write_text(launch_script, encoding="utf-8")
+    full_script = f"source {env_path}\n{launch_script}"
+    script_path.write_text(full_script, encoding="utf-8")
     script_path.chmod(0o755)
 
-    # build env string to forward into tmux
-    env_keys = [k for k in os.environ if k.startswith(("GEMINI_", "ANTHROPIC_", "OPENAI_", "GOOGLE_"))]
-    env_exports = "; ".join(f"export {k}={os.environ[k]!r}" for k in env_keys)
-    shell_cmd = f"{env_exports}; bash {script_path}" if env_exports else f"bash {script_path}"
-
+    # create session then send-keys (not bash -c) so the shell is interactive
+    # and properly attached to the PTY — some backends (gemini-cli) get
+    # suspended (SIGTTIN) if they aren't the foreground process group leader.
     _run([
         "new-session", "-d",
         "-s", name,
         "-c", working_dir,
-        "bash", "-c", shell_cmd,
     ])
+    _run(["send-keys", "-t", name, f"bash {script_path}", "Enter"])
 
 
 def kill_session(agent_name: str) -> bool:
