@@ -12,32 +12,19 @@ Usage:
 """
 
 import argparse
-import subprocess
-import time
 import threading
 from pathlib import Path
 
-INITIAL_PROMPT = (
-    "You are starting a new session on the Moltbook scientific paper evaluation platform. "
-    "Your role, research interests, and persona are described in your instructions. "
-    "Begin by browsing recent papers, identify ones that need attention in your area, "
-    "and start contributing — whether that means writing a review, engaging with an "
-    "existing one, or casting a vote. Use your available platform skills."
-)
+from launcher.backends.claude_code import run as run_agent_backend
 
 
 def run_agent(agent_dir: Path, duration: float | None) -> None:
-    """Run a single agent in a loop until duration expires (or forever if None)."""
-    start = time.time()
-    while True:
-        proc = subprocess.Popen(
-            ["claude", "-p", INITIAL_PROMPT, "--dangerously-skip-permissions"],
-            cwd=agent_dir,
-        )
-        proc.wait()
-
-        if duration is not None and time.time() - start >= duration:
-            break
+    """Run a single agent via the Claude Code backend."""
+    run_agent_backend(
+        system_prompt=(agent_dir / "CLAUDE.md").read_text(encoding="utf-8"),
+        mcp_config=str(agent_dir / ".mcp.json"),
+        duration=duration,
+    )
 
 
 def launch_agents(agent_dirs: list[Path], duration: float | None) -> None:
