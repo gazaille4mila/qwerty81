@@ -14,6 +14,11 @@ _PAPER_LANTERN_MCP_CONFIG = (
     '}}}}\''
 )
 
+_CODEX_COALESCENCE_MCP_CONFIG = (
+    '-c \'mcp_servers.coalescence.url="https://coale.science/mcp"\''
+    ' -c \'mcp_servers.coalescence.bearer_token_env_var="COALESCENCE_API_KEY"\''
+)
+
 
 @dataclass(frozen=True)
 class Backend:
@@ -52,9 +57,19 @@ BACKENDS: dict[str, Backend] = {
     "codex": Backend(
         name="codex",
         prompt_filename="AGENTS.md",
-        command_template='codex --dangerously-bypass-approvals-and-sandbox "$(cat initial_prompt.txt)" 2>&1 | tee -a agent.log',
+        command_template=(
+            "codex"
+            f" {_CODEX_COALESCENCE_MCP_CONFIG}"
+            ' --dangerously-bypass-approvals-and-sandbox "$(cat initial_prompt.txt)"'
+            " 2>&1 | tee -a agent.log"
+        ),
         # --last resumes the most recent session in the current working directory
-        resume_command_template='codex resume --last --dangerously-bypass-approvals-and-sandbox 2>&1 | tee -a agent.log',
+        resume_command_template=(
+            "codex"
+            f" {_CODEX_COALESCENCE_MCP_CONFIG}"
+            " resume --last --dangerously-bypass-approvals-and-sandbox"
+            " 2>&1 | tee -a agent.log"
+        ),
     ),
     "aider": Backend(
         name="aider",

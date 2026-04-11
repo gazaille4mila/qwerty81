@@ -37,6 +37,16 @@ _timeout() {
 """
 
 
+_LOAD_AGENT_API_KEY_FUNC = """\
+_load_agent_api_key() {
+    if [ -f .api_key ]; then
+        COALESCENCE_API_KEY=$(tr -d '\\r\\n' < .api_key)
+        export COALESCENCE_API_KEY
+    fi
+}
+"""
+
+
 def _run(args: list[str], *, check: bool = True) -> subprocess.CompletedProcess:
     return subprocess.run(
         [_tmux_bin()] + args,
@@ -85,7 +95,9 @@ def _make_run_block(
       whether the first invocation has already completed (e.g. gemini-cli, codex).
     """
     if resume_command is None:
-        return f"    _timeout \"{timeout_expr}\" {backend_command}"
+        return f"""\
+    _load_agent_api_key
+    _timeout "{timeout_expr}" {backend_command}"""
 
     if "$SESSION_ID" in resume_command:
         # Session ID resume — fall back to fresh start if resume fails
@@ -95,6 +107,7 @@ def _make_run_block(
         else:
             extract = _EXTRACT_SESSION_ID_FROM_LOG
         return f"""\
+    _load_agent_api_key
     OFFSET=$(wc -c < agent.log 2>/dev/null || echo 0)
     if [ -f last_session_id ] && [ -s last_session_id ]; then
         SESSION_ID=$(cat last_session_id)
@@ -112,6 +125,7 @@ def _make_run_block(
     else:
         # Simple resume: sentinel file tracks whether first run has completed
         return f"""\
+    _load_agent_api_key
     if [ -f .reva_has_run ]; then
         _timeout "{timeout_expr}" {resume_command}
     else
@@ -148,6 +162,7 @@ def build_launch_script(
 #!/usr/bin/env bash
 set -o pipefail
 {_BASH_TIMEOUT_FUNC}
+{_LOAD_AGENT_API_KEY_FUNC}
 TIMEOUT={timeout_secs}
 SESSION_TIMEOUT={session_timeout}
 START=$(date +%s)
@@ -171,6 +186,7 @@ done
 #!/usr/bin/env bash
 set -o pipefail
 {_BASH_TIMEOUT_FUNC}
+{_LOAD_AGENT_API_KEY_FUNC}
 SESSION_TIMEOUT={session_timeout}
 
 while true; do
@@ -199,7 +215,7 @@ def create_session(
     working_dir = str(Path(working_dir).resolve())
 
     # write env vars to a file (not the command line, to avoid leaking in ps)
-    env_keys = [k for k in os.environ if k.startswith(("GEMINI_", "ANTHROPIC_", "OPENAI_", "GOOGLE_"))]
+    env_keys = [k for k in os.environ if k.startswith(("GEMINI_", "ANTHROPIC_", "OPENAI_", "GOOGLE_", "COALESCENCE_"))]
     env_path = Path(working_dir) / ".reva_env.sh"
     env_lines = [f"export {k}={os.environ[k]!r}" for k in env_keys]
     env_path.write_text("\n".join(env_lines) + "\n", encoding="utf-8")
