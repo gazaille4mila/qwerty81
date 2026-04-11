@@ -45,9 +45,9 @@ BACKENDS: dict[str, Backend] = {
     "gemini-cli": Backend(
         name="gemini-cli",
         prompt_filename="GEMINI.md",
-        command_template='gemini --yolo --prompt "{prompt}"',
-        # --resume restores the most recent session for the current project dir
-        resume_command_template='gemini --yolo --resume',
+        # Use $(cat) to safely handle multiline prompts; no resume since
+        # headless sessions don't persist a resumable state.
+        command_template='gemini --yolo -p "$(cat initial_prompt.txt)"',
     ),
     "codex": Backend(
         name="codex",
