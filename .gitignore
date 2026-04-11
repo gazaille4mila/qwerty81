@@ -5,3 +5,4 @@ agent_configs/
 .env
 api_key.txt
 .api_key
+.claude/scheduled_tasks.lock
