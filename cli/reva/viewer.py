@@ -8,10 +8,11 @@ import json
 import time
 from pathlib import Path
 
+from rich.text import Text
 from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, VerticalScroll
 from textual.widgets import (
     Button,
     DataTable,
@@ -49,42 +50,71 @@ def _summarize_tool_input(tool: str, inp: dict) -> str:
     return json.dumps(inp, ensure_ascii=False)[:200]
 
 
-def _parse_log_line(line: str) -> list[tuple[str, str]]:
-    """Parse one stream-json line into list of (style, text) pairs for RichLog."""
+# Tool name → color
+_TOOL_COLORS: dict[str, str] = {
+    "Bash": "dark_orange",
+    "Read": "steel_blue",
+    "Write": "medium_orchid",
+    "Edit": "medium_orchid",
+    "WebFetch": "turquoise2",
+    "WebSearch": "turquoise2",
+    "Grep": "khaki1",
+    "Glob": "khaki1",
+    "Skill": "spring_green2",
+}
+
+
+def _parse_log_line(line: str) -> list[Text]:
+    """Parse one stream-json line into Rich Text objects for RichLog."""
     if not line:
         return []
     try:
         d = json.loads(line)
     except json.JSONDecodeError:
-        return [("dim", line)]
+        t = Text(line)
+        t.stylize("dim")
+        return [t]
 
     typ = d.get("type")
-    out: list[tuple[str, str]] = []
+    out: list[Text] = []
 
     if typ == "system" and d.get("subtype") == "init":
         model = d.get("model", "?")
-        out.append(("bold green", f"\n▶ session started  model={model}"))
+        t = Text()
+        t.append("\n▶ session started  ", style="bold bright_green")
+        t.append(f"model={model}", style="green")
+        out.append(t)
 
     elif typ == "assistant":
         for block in d.get("message", {}).get("content", []):
             btype = block.get("type")
+
             if btype == "thinking":
                 thought = block.get("thinking", "").strip()
                 if thought:
-                    out.append(("bold dim", "\nthinking:"))
-                    out.append(("dim", f"  {thought}"))
+                    t = Text()
+                    t.append("\n💭 thinking\n", style="bold color(244)")
+                    t.append(f"   {thought}", style="italic color(240)")
+                    out.append(t)
+
             elif btype == "text":
                 text = block.get("text", "").strip()
                 if text:
-                    out.append(("bold cyan", "\n» "))
-                    out.append(("", text))
+                    t = Text()
+                    t.append("\n» ", style="bold bright_cyan")
+                    t.append(text, style="bright_white")
+                    out.append(t)
+
             elif btype == "tool_use":
                 tool = block.get("name", "?")
                 inp = block.get("input", {})
                 summary = _summarize_tool_input(tool, inp)
-                out.append(("bold yellow", f"\n⚙ {tool}"))
+                color = _TOOL_COLORS.get(tool, "yellow")
+                t = Text()
+                t.append(f"\n⚙ {tool}", style=f"bold {color}")
                 if summary:
-                    out.append(("yellow", f"  {summary}"))
+                    t.append(f"\n  {summary}", style=f"dim {color}")
+                out.append(t)
 
     elif typ == "user":
         for block in d.get("message", {}).get("content", []):
@@ -93,18 +123,25 @@ def _parse_log_line(line: str) -> list[tuple[str, str]]:
                 if isinstance(result, list):
                     result = " ".join(r.get("text", "") for r in result if isinstance(r, dict))
                 if result and result.strip():
-                    out.append(("dim", f"  ← {result.strip()[:300]}"))
+                    t = Text()
+                    t.append("  ← ", style="dim")
+                    t.append(result.strip()[:400], style="color(245)")
+                    out.append(t)
 
     elif typ == "result":
         cost = d.get("cost_usd")
         turns = d.get("num_turns")
         cost_str = f"  cost=${cost:.4f}" if cost else ""
-        out.append(("bold red", f"\n■ session ended  turns={turns}{cost_str}\n"))
+        t = Text()
+        t.append(f"\n■ session ended  turns={turns}{cost_str}\n", style="bold red")
+        out.append(t)
 
     elif typ == "rate_limit_event":
         status = d.get("rate_limit_info", {}).get("status", "?")
         if status != "allowed":
-            out.append(("bold magenta", f"⚠ rate limit: {status}"))
+            t = Text()
+            t.append(f"⚠ rate limit: {status}", style="bold magenta")
+            out.append(t)
 
     return out
 
@@ -137,7 +174,7 @@ class RevaViewer(App):
     #output-log {
         scrollbar-gutter: stable;
     }
-    #system-prompt {
+    #prompt-scroll {
         padding: 1 2;
     }
     #agent-table {
@@ -165,7 +202,8 @@ class RevaViewer(App):
             with TabPane("Output", id="tab-output"):
                 yield RichLog(id="output-log", highlight=False, markup=False, wrap=True)
             with TabPane("System Prompt", id="tab-prompt"):
-                yield Markdown("", id="system-prompt")
+                with VerticalScroll(id="prompt-scroll"):
+                    yield Markdown("", id="system-prompt")
             with TabPane("Agent Info", id="tab-info"):
                 yield DataTable(id="agent-table", zebra_stripes=True)
         yield Footer()
@@ -188,18 +226,15 @@ class RevaViewer(App):
             for d in self.cfg.agents_dir.iterdir():
                 if d.is_dir() and (d / "agent.log").exists():
                     names.add(d.name)
-        # running agents first
         return sorted(running, key=str) + sorted(names - running, key=str)
 
     def _populate_agent_list(self) -> None:
         names = self._get_agent_names()
         if names == self._known_agents:
-            return  # nothing changed, skip re-render
+            return
         self._known_agents = names
         sel = self.query_one("#agent-select", Select)
-        options = [(name, name) for name in names]
-        sel.set_options(options)
-        # restore selection if still valid
+        sel.set_options([(name, name) for name in names])
         if self._current_agent and self._current_agent in names:
             sel.value = self._current_agent
 
@@ -230,16 +265,16 @@ class RevaViewer(App):
     def _load_agent(self, name: str) -> None:
         agent_dir = self.cfg.agents_dir / name
 
-        # clear and reload output log
+        # output log
         log_widget = self.query_one("#output-log", RichLog)
         log_widget.clear()
-        self._tail_running = False  # signal old worker to stop
-        time.sleep(0.05)           # give worker a moment to notice
+        self._tail_running = False
+        time.sleep(0.05)
         log_path = agent_dir / "agent.log"
         if log_path.exists():
             self._tail_log(log_path)
 
-        # system prompt tab
+        # system prompt
         prompt_widget = self.query_one("#system-prompt", Markdown)
         claude_md = agent_dir / "CLAUDE.md"
         if claude_md.exists():
@@ -247,18 +282,16 @@ class RevaViewer(App):
         else:
             self.call_later(prompt_widget.update, "_No system prompt found._")
 
-        # agent info tab
+        # agent info
         table = self.query_one("#agent-table", DataTable)
         table.clear()
         config_path = agent_dir / "config.json"
         if config_path.exists():
             cfg_data = json.loads(config_path.read_text(encoding="utf-8"))
             for key, val in cfg_data.items():
-                # shorten long paths to just the filename
                 if isinstance(val, str) and "/" in val:
                     val = Path(val).name
                 table.add_row(key, str(val))
-        # running status
         running = {s.agent_name for s in list_sessions()}
         table.add_row("status", "running" if name in running else "stopped")
 
@@ -279,7 +312,5 @@ class RevaViewer(App):
                 line = line.strip()
                 if not line:
                     continue
-                segments = _parse_log_line(line)
-                for style, text in segments:
-                    if text:
-                        self.call_from_thread(log_widget.write, text)
+                for text_obj in _parse_log_line(line):
+                    self.call_from_thread(log_widget.write, text_obj)
