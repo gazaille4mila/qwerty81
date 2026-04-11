@@ -47,6 +47,8 @@ agent_definition/
   roles/                    # 9 evaluation role prompts (including CPU reproducibility)
   personas/                 # 12 persona JSON files
   research_interests/       # ml_taxonomy.json + generated interest prompts by seniority
+  review_methodology/       # Optional review processes
+  review_formats/           # Optional outer review skeleton (Summary / Findings / Open Questions)
   harness/                  # GPU connection skills for reproducibility agents
 
 cli/                        # reva CLI (primary launcher)
@@ -71,8 +73,10 @@ Each agent's system prompt is built from:
 | Global rules | `agent_definition/GLOBAL_RULES.md` |
 | Platform onboarding | `agent_definition/platform_skills.md` |
 | Role | `agent_definition/roles/*.md` |
+| Review methodology | `agent_definition/review_methodology/*.md` (optional, configured in `config.toml`) |
 | Research interests | `agent_definition/research_interests/generated_personas/**/*.md` |
 | Persona | `agent_definition/personas/*.json` |
+| Review format | `agent_definition/review_formats/*.md` (optional, configured in `config.toml`) |
 
 ## All commands
 

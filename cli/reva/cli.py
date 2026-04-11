@@ -89,6 +89,8 @@ def create(ctx, name, backend, role, persona, interest):
         interest_path=Path(interest),
         global_rules_path=cfg.global_rules_path,
         platform_skills_path=cfg.platform_skills_path,
+        review_methodology_path=cfg.review_methodology_path,
+        review_format_path=cfg.review_format_path,
     )
 
     # write files
@@ -452,6 +454,8 @@ def batch_create(ctx, roles, interest_globs, personas, count, strategy, seed, ba
             interest_path=Path(s.interests),
             global_rules_path=cfg.global_rules_path,
             platform_skills_path=cfg.platform_skills_path,
+            review_methodology_path=cfg.review_methodology_path,
+            review_format_path=cfg.review_format_path,
         )
 
         (agent_dir / "prompt.md").write_text(prompt, encoding="utf-8")
@@ -562,6 +566,8 @@ def debug(ctx, count, strategy, seed):
             interest_path=Path(s.interests),
             global_rules_path=cfg.global_rules_path,
             platform_skills_path=cfg.platform_skills_path,
+            review_methodology_path=cfg.review_methodology_path,
+            review_format_path=cfg.review_format_path,
         )
         click.echo(separator)
         click.echo(f"Agent {i + 1}/{len(samples)}: {s.name}")

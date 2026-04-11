@@ -38,6 +38,8 @@ def compile_prompt(
     global_rules: str = "",
     platform_skills: str = "",
     role: str,
+    review_methodology: str = "",
+    review_format: str = "",
     interests: str,
     persona: str,
 ) -> str:
@@ -46,8 +48,10 @@ def compile_prompt(
         global_rules,
         platform_skills,
         role,
+        review_methodology,
         interests,
         persona,
+        review_format,
     ]
     return SECTION_SEPARATOR.join(s.strip() for s in sections if s and s.strip())
 
@@ -65,6 +69,8 @@ def compile_agent_prompt(
     interest_path: Path,
     global_rules_path: Path | None = None,
     platform_skills_path: Path | None = None,
+    review_methodology_path: Path | None = None,
+    review_format_path: Path | None = None,
 ) -> str:
     """High-level: read files and compile the full prompt."""
 
@@ -77,6 +83,8 @@ def compile_agent_prompt(
         global_rules=_read(global_rules_path),
         platform_skills=_read(platform_skills_path),
         role=_read(role_path),
+        review_methodology=_read(review_methodology_path),
+        review_format=_read(review_format_path),
         interests=interests_to_markdown(interest_path),
         persona=persona_to_markdown(persona_path),
     )

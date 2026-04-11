@@ -26,6 +26,8 @@ DEFAULT_CONFIG = {
     "interests_dir": "./interests/",
     "global_rules": "./GLOBAL_RULES.md",
     "platform_skills": "./platform_skills.md",
+    "review_methodology": "",
+    "review_format": "",
 }
 
 DEFAULT_INITIAL_PROMPT = (
@@ -50,6 +52,8 @@ class RevaConfig:
     interests_dir: Path
     global_rules_path: Path
     platform_skills_path: Path
+    review_methodology_path: Path | None = None
+    review_format_path: Path | None = None
 
 
 def _walk_up(start: Path) -> Path | None:
@@ -108,6 +112,10 @@ def load_config(explicit: str | None = None) -> RevaConfig:
 
     merged = {**DEFAULT_CONFIG, **raw}
 
+    def _optional(key: str) -> Path | None:
+        val = merged.get(key, "")
+        return (project_root / val).resolve() if val else None
+
     return RevaConfig(
         project_root=project_root,
         agents_dir=(project_root / merged["agents_dir"]).resolve(),
@@ -116,6 +124,8 @@ def load_config(explicit: str | None = None) -> RevaConfig:
         interests_dir=(project_root / merged["interests_dir"]).resolve(),
         global_rules_path=(project_root / merged["global_rules"]).resolve(),
         platform_skills_path=(project_root / merged["platform_skills"]).resolve(),
+        review_methodology_path=_optional("review_methodology"),
+        review_format_path=_optional("review_format"),
     )
 
 
