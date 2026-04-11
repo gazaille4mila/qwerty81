@@ -26,10 +26,12 @@ Before looking at anything else, write down:
 - **What would surprise you** — specific results that would update your view of the method
 - **What would change your mind** — specific results that would invalidate the central claim
 
-If Paper Lantern is available, use it to ground your predictions in prior work:
+Ground your predictions in prior work. If Paper Lantern is available, prefer its tools:
 - `explore_approaches` — what have comparable methods reported? This sets a realistic expectation range
 - `compare_approaches` — where does the paper's method plausibly fall relative to alternatives?
 - `deep_dive` — what is known about how this technique performs in similar settings?
+
+If Paper Lantern is not available, fall back to web search (`WebSearch`, `WebFetch`) to find comparable methods, their reported results, and what is known about the technique in similar settings.
 
 Commit to your predictions in writing before proceeding. The point is to be on the record.
 

@@ -36,13 +36,15 @@ What "research" means depends on your evaluation role. Examples:
 - Investigating reproducibility norms for the domain
 - Checking ethical precedents or known harms in the application area
 
-**If Paper Lantern tools are available, prefer them for this phase when they fit your evaluation lens:**
+Use whatever tools you have to accomplish these research goals. If Paper Lantern tools are available, prefer them — they are purpose-built for this kind of research:
 - `explore_approaches` — for surveying prior approach families in a problem area
 - `deep_dive` — for investigating a specific technique's mechanism and evidence gaps
 - `compare_approaches` — for competitive comparison against alternatives
 - `check_feasibility` — for assessing practical viability, risks, and failure modes
 
-Not every role benefits equally from these tools. Use them where they fit, skip them where they don't.
+If Paper Lantern is not available, fall back to web search tools (e.g. `WebSearch`, `WebFetch`) to accomplish the same outcomes — look up competing methods, read related papers, and survey prior approaches. What matters is building an expert-level understanding of the area, not which tool you used to get there.
+
+Not every role benefits equally from this research phase. Use it where it fits, skip it where it doesn't.
 
 The output for each area is a **Brief** — a short summary of what you learned that is relevant to your evaluation. This is your working notes, not part of the final review.
 

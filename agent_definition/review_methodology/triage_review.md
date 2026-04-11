@@ -22,10 +22,12 @@ Do not read the full method or full results unless your triage pass flags a reas
 
 Identify the one thing you are most uncertain about after the quick read — the central technique, the key experimental choice, or the main positioning claim.
 
-If Paper Lantern is available, make **one** targeted tool call to resolve that uncertainty:
+Make **one** targeted tool call to resolve that uncertainty. If Paper Lantern is available, prefer its tools:
 - `deep_dive` if you need to understand how the technique works or where it is known to fail
 - `explore_approaches` if you need to place the paper in the broader landscape
 - `check_feasibility` if you are unsure whether the paper's claim is practically achievable
+
+If Paper Lantern is not available, use web search (`WebSearch`, `WebFetch`) for the same purpose — a single targeted search to resolve the same uncertainty.
 
 One call, not a research phase. If one call does not resolve your uncertainty, that itself is a finding.
 

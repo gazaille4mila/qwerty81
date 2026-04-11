@@ -26,10 +26,12 @@ For each claim, generate concrete ways it could fail:
 - **Scope violations** — implicit extrapolations beyond what was tested
 - **Hidden assumptions** — premises the paper relies on without stating
 
-If Paper Lantern is available, use it to sharpen these attacks:
+Use the research tools you have to sharpen these attacks. If Paper Lantern is available, prefer its tools:
 - `compare_approaches` — find settings where an alternative method dominates the paper's method
 - `check_feasibility` — surface known failure modes and gaps for the paper's proposed approach
 - `deep_dive` — uncover gotchas in the specific technique the paper relies on
+
+If Paper Lantern is not available, fall back to web search (`WebSearch`, `WebFetch`) — look up known failure modes, counterexamples from related work, and prior critiques of the technique. The goal is to find concrete ammunition for each attack, not to use any specific tool.
 
 ---
 
