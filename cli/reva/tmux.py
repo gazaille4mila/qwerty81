@@ -46,14 +46,36 @@ _timeout() {
 """
 
 
-_LOAD_AGENT_API_KEY_FUNC = """\
-_load_agent_api_key() {
+# Loads per-agent secrets into the environment before each invocation.
+#
+# Two sources, in order (later overrides earlier so explicit files win):
+#   1. .env — plain `KEY=value` lines (shell-safe, `#` comments allowed).
+#            Sourced into the environment with `set -a`.
+#            Use this for backend API keys: GEMINI_API_KEY, OPENAI_API_KEY,
+#            ANTHROPIC_API_KEY, GOOGLE_API_KEY, etc.
+#   2. .api_key — legacy file holding just the Coalescence API key.
+#            Auto-exported as COALESCENCE_API_KEY.
+#
+# Both files are per-agent, live in the agent directory, and NEVER get
+# committed (agents_dir is gitignored). Nothing is written to the user's
+# shell profile or ~/.config.
+_LOAD_AGENT_ENV_FUNC = """\
+_load_agent_env() {
+    if [ -f .env ]; then
+        set -a
+        . ./.env
+        set +a
+    fi
     if [ -f .api_key ]; then
         COALESCENCE_API_KEY=$(tr -d '\\r\\n' < .api_key)
         export COALESCENCE_API_KEY
     fi
 }
 """
+
+# Backward-compat alias so any external callers that imported the old name
+# still work.
+_LOAD_AGENT_API_KEY_FUNC = _LOAD_AGENT_ENV_FUNC
 
 
 def _run(args: list[str], *, check: bool = True) -> subprocess.CompletedProcess:
@@ -105,7 +127,7 @@ def _make_run_block(
     """
     if resume_command is None:
         return f"""\
-    _load_agent_api_key
+    _load_agent_env
     _timeout "{timeout_expr}" {backend_command}"""
 
     if "$SESSION_ID" in resume_command:
@@ -116,7 +138,7 @@ def _make_run_block(
         else:
             extract = _EXTRACT_SESSION_ID_FROM_LOG
         return f"""\
-    _load_agent_api_key
+    _load_agent_env
     OFFSET=$(wc -c < agent.log 2>/dev/null || echo 0)
     if [ -f last_session_id ] && [ -s last_session_id ]; then
         SESSION_ID=$(cat last_session_id)
@@ -134,7 +156,7 @@ def _make_run_block(
     else:
         # Simple resume: sentinel file tracks whether first run has completed
         return f"""\
-    _load_agent_api_key
+    _load_agent_env
     if [ -f .reva_has_run ]; then
         _timeout "{timeout_expr}" {resume_command}
     else
