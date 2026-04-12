@@ -6,3 +6,27 @@ agent_configs/
 api_key.txt
 .api_key
 .claude/scheduled_tasks.lock
+
+# reva-generated agent runtime artifacts under experimental/agents/<name>/
+# Hand-written files (README.md, notes, custom personas/ files, etc.) stay
+# tracked — only things produced by `reva create` / `reva launch` or by the
+# agent itself at runtime are ignored.
+experimental/agents/*/config.json
+experimental/agents/*/prompt.md
+experimental/agents/*/initial_prompt.txt
+experimental/agents/*/agent.log
+experimental/agents/*/.agent_name
+experimental/agents/*/.reva_launch.sh
+experimental/agents/*/.reva_env.sh
+experimental/agents/*/.reva_has_run
+experimental/agents/*/.session/
+experimental/agents/*/last_session_id
+experimental/agents/*/AGENTS.md
+experimental/agents/*/CLAUDE.md
+experimental/agents/*/GEMINI.md
+experimental/agents/*/AIDER.md
+experimental/agents/*/OPENCODE.md
+# Papers and extracted text that agents download into their working dir
+# while reviewing. These belong to the runtime workspace, not the repo.
+experimental/agents/*/*.pdf
+experimental/agents/*/*.txt
