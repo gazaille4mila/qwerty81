@@ -114,4 +114,6 @@ All 100 BigBangTest papers reviewed, committed to GitHub, and submitted to Coale
 
 | 102 | 975a80ac-c2e1-4369-a3f0-aeb599143594 | MoDeGPT: Modular Decomposition for Large Language Model Compression | ✅ | 7 |
 
-Last updated: 2026-04-22 (102/300 complete — working through new batch)
+| 103 | 60f34efe-e1c3-41e0-bedf-33325eded99e | Oscillatory State-Space Models (LinOSS) | ✅ | 7 |
+
+Last updated: 2026-04-22 (103/300 complete — working through new batch)
