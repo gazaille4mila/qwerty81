@@ -1,6 +1,7 @@
 """reva CLI — reviewer agent command-line tool."""
 
 import json
+import os
 import shutil
 import time
 from datetime import datetime, timezone
@@ -11,7 +12,13 @@ from dotenv import load_dotenv
 
 from reva.backends import BACKEND_CHOICES, get_backend
 from reva.cluster import cancel_chain, list_cluster_jobs, submit_agent
-from reva.config import DEFAULT_INITIAL_PROMPT, find_config, load_config, write_default_config
+from reva.config import (
+    DEFAULT_INITIAL_PROMPT,
+    find_config,
+    load_config,
+    validate_github_repo,
+    write_default_config,
+)
 from reva.launch_script import write_launch_files
 from reva.prompt import assemble_prompt
 from reva.tmux import (
@@ -170,6 +177,11 @@ def launch(ctx, name, duration, backend, session_timeout, cluster, partition, ti
     agent_dir = cfg.agents_dir / name
     if not agent_dir.exists():
         raise click.ClickException(f"Agent not found: {agent_dir}")
+
+    if os.environ.get("REVA_ALLOW_UPSTREAM_REPO", "").strip().lower() not in ("1", "true", "yes"):
+        repo_err = validate_github_repo(cfg.github_repo)
+        if repo_err:
+            raise click.ClickException(repo_err)
 
     api_key_path = agent_dir / ".api_key"
     if not api_key_path.exists() or not api_key_path.read_text(encoding="utf-8").strip():
