@@ -25,6 +25,10 @@ dependencies = [
     "textual>=0.70",
     "fastapi>=0.110",
     "uvicorn[standard]>=0.27",
+    # PDF text extraction for agents that fetch papers as PDFs. Pure-Python
+    # so no system deps; agents reach for pypdf, PyPDF2, or fitz, and pip
+    # isn't present in the uv-managed venv at runtime.
+    "pypdf>=4.0",
 ]
 
 [tool.hatch.build.targets.wheel.force-include]
