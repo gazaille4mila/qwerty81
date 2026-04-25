@@ -4,16 +4,40 @@ from dataclasses import dataclass
 
 from reva.env import koala_base_url
 
-# Paper Lantern MCP server config, inlined into the claude-code command template.
-# The JSON is wrapped in single quotes at the shell level so its internal double
-# quotes pass through unchanged; `\'` escapes the single quotes inside the Python
-# string. Braces are doubled ({{ / }}) so that reva's str.format() call in
-# cli.py (which substitutes {prompt} for other backends) does not interpret them
-# as format fields — the doubling collapses back to single braces at format time.
-_PAPER_LANTERN_MCP_CONFIG = (
-    '\'{{"mcpServers":{{"paperlantern":'
-    '{{"type":"http","url":"https://mcp.paperlantern.ai/chat/mcp?key=pl_cd1099cd5b35f6c193f9"}}'
-    '}}}}\''
+# MCP server config inlined into the claude-code command template.
+#
+# Two servers are registered:
+#   - paperlantern: research-helper MCP, public key is fine to inline.
+#   - koala: the platform itself (profile, notifications, papers, comments,
+#     verdicts). Bearer-token authenticated; the token comes from
+#     $COALESCENCE_API_KEY, which the launch script auto-exports from the
+#     agent's `.api_key` file (see tmux.py:_LOAD_AGENT_ENV_FUNC).
+#
+# The JSON is wrapped in single quotes at the shell level so its internal
+# double quotes pass through unchanged. To get bash to expand
+# $COALESCENCE_API_KEY *inside* a single-quoted string, we close the single
+# quote, re-open as a double-quoted segment containing the variable, and
+# resume single-quoting — the standard '"$VAR"' dance.
+#
+# Braces are doubled ({{ / }}) so reva's str.format() call in cli.py — which
+# substitutes {prompt} for other backends — does not interpret them as format
+# fields; doubling collapses back to single braces at format time.
+_CLAUDE_MCP_CONFIG = (
+    "'{{"
+    '"mcpServers":{{'
+    '"paperlantern":{{'
+    '"type":"http",'
+    '"url":"https://mcp.paperlantern.ai/chat/mcp?key=pl_cd1099cd5b35f6c193f9"'
+    "}},"
+    '"koala":{{'
+    '"type":"http",'
+    '"url":"https://koala.science/mcp",'
+    '"headers":{{'
+    '"Authorization":"Bearer \'"$COALESCENCE_API_KEY"\'"'
+    "}}"
+    "}}"
+    "}}"
+    "}}'"
 )
 
 
@@ -48,17 +72,18 @@ def _build_backends() -> dict[str, Backend]:
                 'claude -p "$(cat initial_prompt.txt)"'
                 " --dangerously-skip-permissions"
                 " --output-format stream-json --verbose"
-                f" --mcp-config {_PAPER_LANTERN_MCP_CONFIG}"
+                f" --mcp-config {_CLAUDE_MCP_CONFIG}"
                 " 2>&1 | tee -a agent.log"
             ),
             # session_id parsed from stream-json log by tmux.py (_EXTRACT_SESSION_ID_FROM_LOG).
             # --mcp-config must be re-passed on resume: it is a runtime flag, not
-            # persisted in the session state, so omitting it drops paperlantern.
+            # persisted in the session state, so omitting it drops both
+            # paperlantern and koala (i.e. all platform tools).
             resume_command_template=(
                 'claude --resume "$SESSION_ID"'
                 " --dangerously-skip-permissions"
                 " --output-format stream-json --verbose"
-                f" --mcp-config {_PAPER_LANTERN_MCP_CONFIG}"
+                f" --mcp-config {_CLAUDE_MCP_CONFIG}"
                 " 2>&1 | tee -a agent.log"
             ),
         ),

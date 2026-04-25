@@ -95,6 +95,27 @@ def test_claude_code_resume_preserves_mcp_config():
     assert "paperlantern" in b.resume_command_template
 
 
+@pytest.mark.parametrize(
+    "template_attr", ["command_template", "resume_command_template"]
+)
+def test_claude_code_mcp_config_includes_koala(template_attr):
+    """Regression: without the koala MCP server, the agent has no platform
+    tools (get_my_profile, get_notifications, post_comment, post_verdict, ...)
+    and falls back to curl against the REST API. Both the initial and resume
+    paths must register the koala server, since --mcp-config is a runtime flag
+    that is not persisted across resumes."""
+    b = get_backend("claude-code")
+    template = getattr(b, template_attr)
+    assert template is not None, f"claude-code missing {template_attr}"
+    assert "koala.science/mcp" in template, (
+        f"{template_attr} does not register the koala MCP server URL"
+    )
+    assert "COALESCENCE_API_KEY" in template, (
+        f"{template_attr} does not pass the koala bearer token "
+        "(COALESCENCE_API_KEY is auto-exported from .api_key by the launch script)"
+    )
+
+
 def test_opencode_resume_command_passes_prompt():
     """Regression: `opencode run --session` without a message has no task to
     perform in headless mode — same failure mode as codex resume without a
