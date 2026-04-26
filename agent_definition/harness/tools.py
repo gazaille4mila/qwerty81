@@ -8,8 +8,47 @@ The live MCP endpoint at https://koala.science/mcp is the source of truth.
 If a schema here disagrees with the live skill doc at
 https://koala.science/skill.md, the live doc wins.
 """
+import re
 import subprocess
 from .koala import KoalaClient
+
+_PREFIX_RE = re.compile(r"^[0-9a-f]{8}$")
+
+_UUID_CORRECTION_HINT = (
+    "Koala IDs are always full UUIDs (e.g. 'a1b44436-1234-4abc-9def-0123456789ab'). "
+    "The 8-char prefix is for branch names / reasoning-file paths only — never in tool calls. "
+    "To recover the full UUID for this paper, call get_papers (or look up the full UUID "
+    "in the file path inside your agent-reasoning branch)."
+)
+
+
+def _prefix_error(field: str, value: str) -> str:
+    return f"ERROR: {field} '{value}' is the 8-char branch-prefix shape, not the full UUID. {_UUID_CORRECTION_HINT}"
+
+
+def _validate_ids(tool_name: str, tool_input: dict) -> str | None:
+    """Return an error string if any *_id or *_ids field has a prefix-shape value.
+
+    Validates fields whose name ends in `_id` or `_ids`. Lists are checked element-wise.
+    None values, empty strings, and non-prefix-shape malformed values pass through (let
+    the API surface its own error). Skipped entirely for `run_code`.
+    """
+    if tool_name == "run_code":
+        return None
+    errors: list[str] = []
+    for field, value in tool_input.items():
+        if not (field.endswith("_id") or field.endswith("_ids")):
+            continue
+        if value is None or value == "":
+            continue
+        if isinstance(value, list):
+            for item in value:
+                if isinstance(item, str) and _PREFIX_RE.fullmatch(item):
+                    errors.append(_prefix_error(field, item))
+        elif isinstance(value, str):
+            if _PREFIX_RE.fullmatch(value):
+                errors.append(_prefix_error(field, value))
+    return "\n".join(errors) if errors else None
 
 PLATFORM_TOOLS = [
     {
@@ -34,7 +73,7 @@ PLATFORM_TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
-                "paper_id": {"type": "string"},
+                "paper_id": {"type": "string", "description": "Full UUID of the paper (e.g. 'a1b44436-1234-4abc-9def-0123456789ab'). Never the 8-char branch-prefix shape — that returns 422."},
             },
             "required": ["paper_id"],
         },
@@ -45,7 +84,7 @@ PLATFORM_TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
-                "paper_id": {"type": "string"},
+                "paper_id": {"type": "string", "description": "Full UUID of the paper (e.g. 'a1b44436-1234-4abc-9def-0123456789ab'). Never the 8-char branch-prefix shape — that returns 422."},
             },
             "required": ["paper_id"],
         },
@@ -61,7 +100,7 @@ PLATFORM_TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
-                "paper_id": {"type": "string"},
+                "paper_id": {"type": "string", "description": "Full UUID of the paper (e.g. 'a1b44436-1234-4abc-9def-0123456789ab'). Never the 8-char branch-prefix shape — that returns 422."},
                 "content_markdown": {"type": "string", "description": "Comment body in markdown"},
                 "github_file_url": {
                     "type": "string",
@@ -88,7 +127,7 @@ PLATFORM_TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
-                "paper_id": {"type": "string"},
+                "paper_id": {"type": "string", "description": "Full UUID of the paper (e.g. 'a1b44436-1234-4abc-9def-0123456789ab'). Never the 8-char branch-prefix shape — that returns 422."},
                 "score": {"type": "number", "description": "Score from 0.0 to 10.0 (float)"},
                 "content_markdown": {
                     "type": "string",
@@ -119,7 +158,7 @@ PLATFORM_TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
-                "actor_id": {"type": "string"},
+                "actor_id": {"type": "string", "description": "Full UUID of the agent or human actor. Never the 8-char prefix shape."},
             },
             "required": ["actor_id"],
         },
@@ -193,6 +232,9 @@ def get_tools(has_gpu: bool = False) -> list:
 def dispatch(tool_name: str, tool_input: dict, client: KoalaClient) -> str:
     if tool_name == "run_code":
         return _run_code(tool_input["script"], gpu=tool_input.get("gpu", False))
+    err = _validate_ids(tool_name, tool_input)
+    if err is not None:
+        return err
     return client.call_tool(tool_name, tool_input)
 
 
