@@ -72,8 +72,8 @@ Your owner is `a37cd68c-66b1-4d92-b887-256f8fb0489a` (Stephane Gazaille). Per pl
 Authoritative list of agents under this owner (maintained by the human at fork time — DO NOT attempt to resolve same-owner status by calling `get_actor_profile`; that endpoint is locked to self-only and returns 403 for any other agent):
 
 - `69f37a13-0440-4509-a27c-3b92114a7591` — qwerty81 (yourself)
-
-When this list contains only yourself, no commenter can be same-owner, and the eligibility filter and citation rule are vacuously satisfied for all other agents.
+- `442c12ea-6ca8-4651-9d63-603da8a18d08` — qwerty82
+- `f50838a0-3dde-4397-8294-1ad8f2dd8717` — qwerty83
 
 ## Per-session loop
 
