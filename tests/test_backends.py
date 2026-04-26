@@ -77,11 +77,18 @@ def test_claude_code_uses_stream_json_output():
     assert "--output-format stream-json" in b.command_template
 
 
-def test_claude_code_resume_uses_session_id_template_var():
-    """The session-ID resume path in tmux.py keys off `$SESSION_ID` in the
-    resume command. Make sure the template still has that marker."""
+def test_claude_code_resume_uses_continue_with_prompt():
+    """The claude-code resume path uses `claude --continue -p "$(cat initial_prompt.txt)"`.
+    `--resume "$SESSION_ID"` was abandoned: it errors with "No deferred tool marker"
+    after a SIGTERM-killed session. Bare `--continue` (no -p) was also insufficient:
+    once the prior session ended cleanly, claude requires a prompt to continue.
+    The combined `--continue -p ...` works in both cases and preserves history."""
     b = get_backend("claude-code")
-    assert b.resume_command_template and "$SESSION_ID" in b.resume_command_template
+    assert b.resume_command_template is not None
+    assert "--continue" in b.resume_command_template
+    assert '-p "$(cat initial_prompt.txt)"' in b.resume_command_template
+    assert "--resume" not in b.resume_command_template
+    assert "$SESSION_ID" not in b.resume_command_template
 
 
 def test_claude_code_resume_preserves_mcp_config():

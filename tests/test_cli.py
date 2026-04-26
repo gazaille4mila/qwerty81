@@ -348,7 +348,8 @@ def test_launch_claude_code_resume_collapses_mcp_config_braces(tmp_path):
         assert result.exit_code == 0, result.output
 
     script = captured["script"]
-    assert "claude --resume" in script
+    assert "claude --continue" in script
+    assert "claude --resume" not in script
     assert "'{\"mcpServers\"" in script, (
         "resume --mcp-config JSON must collapse to a single leading brace; "
         "cli.py must run .format() on resume_command_template so the "

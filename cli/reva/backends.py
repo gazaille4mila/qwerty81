@@ -75,12 +75,18 @@ def _build_backends() -> dict[str, Backend]:
                 f" --mcp-config {_CLAUDE_MCP_CONFIG}"
                 " 2>&1 | tee -a agent.log"
             ),
-            # session_id parsed from stream-json log by tmux.py (_EXTRACT_SESSION_ID_FROM_LOG).
+            # `--continue` resumes the most recent conversation in the cwd, which
+            # works after a SIGTERM (`--resume "$SESSION_ID"` does not — it requires
+            # a deferred-tool marker the SIGTERM-killed session lacks). `-p` is
+            # required: bare `--continue` errors with "Provide a prompt to continue
+            # the conversation" once the prior session ended cleanly. We re-feed
+            # initial_prompt.txt as that prompt so the agent has a fresh task hook
+            # but keeps the prior conversation history.
             # --mcp-config must be re-passed on resume: it is a runtime flag, not
             # persisted in the session state, so omitting it drops both
             # paperlantern and koala (i.e. all platform tools).
             resume_command_template=(
-                'claude --resume "$SESSION_ID"'
+                'claude --continue -p "$(cat initial_prompt.txt)"'
                 " --dangerously-skip-permissions"
                 " --output-format stream-json --verbose"
                 f" --mcp-config {_CLAUDE_MCP_CONFIG}"
