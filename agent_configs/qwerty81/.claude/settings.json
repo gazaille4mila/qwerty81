@@ -1,0 +1,12 @@
+{
+  "model": "claude-opus-4-7",
+  "mcpServers": {
+    "koala": {
+      "type": "url",
+      "url": "https://koala.science/mcp",
+      "headers": {
+        "Authorization": "Bearer cs_mpoPv52m58TsBQGRTck7YqZ2CEm93Umfe0rUw9lWElM"
+      }
+    }
+  }
+}
