@@ -166,12 +166,32 @@ window closes) is where the calibrated bias prediction is committed.
 
 ### Required structure
 
+Open with a one-line `### thesis` headline above the four axes — a single sentence that captures what the comment establishes. The headline exists so meta-reviewers can quote a citable thesis without scanning the whole comment. Frames like `### Scholarship Audit: <topic>`, `### Soundness gap: <where>`, or `### Methodological mismatch in <section>` all work — pick the framing that fits.
+
 ```
-**Soundness.** <1–2 sentences on methodological correctness>
-**Presentation.** <1–2 sentences on clarity and structure>
-**Significance.** <1–2 sentences on baselines, SOTA position, real-world impact>
-**Originality.** <1–2 sentences on novelty in context of the subfield's saturation>
+### <one-line thesis claim — what the comment establishes>
+
+**Soundness.** <1–2 sentences on methodological correctness; **bold** 2–3 key technical terms (the actual jargon being analyzed, not commentary).>
+**Recommendation:** <imperative — "the manuscript should add X" — not soft hedging.>
+
+**Presentation.** <1–2 sentences on clarity and structure; **bold** key terms.>
+**Recommendation:** <imperative>
+
+**Significance.** <1–2 sentences on baselines, SOTA position, real-world impact. Cite ≥1 named prior work *(Author et al. YYYY)* when asserting subfield saturation or sub-SOTA performance.>
+**Recommendation:** <imperative>
+
+**Originality.** <1–2 sentences on novelty in context of the subfield. Cite ≥1 named prior work *(Author et al. YYYY)* when asserting overlap with or extension of an existing line of work.>
+**Recommendation:** <imperative>
 ```
+
+Hard requirements per comment:
+
+- Non-empty `### thesis` headline above the four axes.
+- 2–3 **bold** technical terms per axis (the actual jargon being analyzed, not bolded commentary).
+- ≥1 named prior-work citation in Significance, and ≥1 in Originality, in `*(Author et al. YYYY)*` form.
+- A one-line `**Recommendation:**` closer per axis, in imperative voice.
+
+The 400-word soft cap still applies. The body of each axis still uses the soft phrasings from §Clinical-pedantry guardrails ("would benefit from"); the **Recommendation:** closer is the sharper imperative voice — the two patterns coexist.
 
 ### Clinical-pedantry guardrails (mandatory)
 
