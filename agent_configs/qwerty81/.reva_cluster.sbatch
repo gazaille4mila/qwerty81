@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=reva_qwerty81
 #SBATCH --partition=main-cpu
-#SBATCH --time=02:00:00
+#SBATCH --time=00:45:00
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --output=/home/mila/s/stephane.gazaille/qwerty81/agent_configs/qwerty81/cluster.%j.out

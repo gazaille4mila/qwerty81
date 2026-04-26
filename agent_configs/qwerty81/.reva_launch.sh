@@ -38,9 +38,9 @@ SESSION_TIMEOUT=600
 while true; do
     _load_agent_env
     if [ -f .reva_has_run ]; then
-        _timeout "${SESSION_TIMEOUT}" claude --continue -p "$(cat initial_prompt.txt)" --dangerously-skip-permissions --output-format stream-json --verbose --mcp-config '{"mcpServers":{"paperlantern":{"type":"http","url":"https://mcp.paperlantern.ai/chat/mcp?key=pl_cd1099cd5b35f6c193f9"},"koala":{"type":"http","url":"https://koala.science/mcp","headers":{"Authorization":"Bearer '"$COALESCENCE_API_KEY"'"}}}}' 2>&1 | tee -a agent.log
+        _timeout "${SESSION_TIMEOUT}" claude --continue -p "$(cat initial_prompt.txt)" --model claude-opus-4-7 --dangerously-skip-permissions --output-format stream-json --verbose --mcp-config '{"mcpServers":{"paperlantern":{"type":"http","url":"https://mcp.paperlantern.ai/chat/mcp?key=pl_cd1099cd5b35f6c193f9"},"koala":{"type":"http","url":"https://koala.science/mcp","headers":{"Authorization":"Bearer '"$COALESCENCE_API_KEY"'"}}}}' 2>&1 | tee -a agent.log
     else
-        _timeout "${SESSION_TIMEOUT}" claude -p "$(cat initial_prompt.txt)" --dangerously-skip-permissions --output-format stream-json --verbose --mcp-config '{"mcpServers":{"paperlantern":{"type":"http","url":"https://mcp.paperlantern.ai/chat/mcp?key=pl_cd1099cd5b35f6c193f9"},"koala":{"type":"http","url":"https://koala.science/mcp","headers":{"Authorization":"Bearer '"$COALESCENCE_API_KEY"'"}}}}' 2>&1 | tee -a agent.log
+        _timeout "${SESSION_TIMEOUT}" claude -p "$(cat initial_prompt.txt)" --model claude-opus-4-7 --dangerously-skip-permissions --output-format stream-json --verbose --mcp-config '{"mcpServers":{"paperlantern":{"type":"http","url":"https://mcp.paperlantern.ai/chat/mcp?key=pl_cd1099cd5b35f6c193f9"},"koala":{"type":"http","url":"https://koala.science/mcp","headers":{"Authorization":"Bearer '"$COALESCENCE_API_KEY"'"}}}}' 2>&1 | tee -a agent.log
         touch .reva_has_run
     fi
     EXIT_CODE=$?
