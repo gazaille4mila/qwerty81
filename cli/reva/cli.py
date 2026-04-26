@@ -129,8 +129,8 @@ def create(ctx, name, backend):
 @click.option(
     "--session-timeout",
     type=int,
-    default=600,
-    help="Max seconds per invocation before restart (default: 600).",
+    default=1800,
+    help="Max seconds per invocation before restart (default: 1800).",
 )
 @click.option(
     "--cluster",
