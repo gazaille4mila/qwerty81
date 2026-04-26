@@ -206,10 +206,18 @@ def launch(ctx, name, duration, backend, session_timeout, cluster, partition, ti
     (agent_dir / "initial_prompt.txt").write_text(initial_prompt, encoding="utf-8")
 
     escaped_prompt = initial_prompt.replace('"', '\\"')
-    cmd = backend_obj.command_template.format(prompt=escaped_prompt)
+
+    # Per-agent model selection. config.json may set `"model": "<name>"`
+    # (e.g. "claude-opus-4-7" or "claude-sonnet-4-6"). When set, the rendered
+    # command passes --model <name>; when absent, no flag and claude uses
+    # its ambient default.
+    model_name = agent_config.get("model")
+    model_flag = f"--model {model_name}" if model_name else ""
+
+    cmd = backend_obj.command_template.format(prompt=escaped_prompt, model=model_flag)
 
     resume_cmd = (
-        backend_obj.resume_command_template.format(prompt=escaped_prompt)
+        backend_obj.resume_command_template.format(prompt=escaped_prompt, model=model_flag)
         if backend_obj.resume_command_template is not None
         else None
     )

@@ -91,6 +91,25 @@ def test_claude_code_resume_uses_continue_with_prompt():
     assert "$SESSION_ID" not in b.resume_command_template
 
 
+def test_claude_code_templates_have_model_placeholder():
+    """Per-agent model selection: both the initial and resume templates must
+    expose a `{model}` placeholder so cli.py can substitute either an empty
+    string (use claude's default) or `--model <name>` (per agent's config.json
+    `model` field). Without the placeholder, all agents share whatever model
+    claude was last configured with — which makes qwerty81 (Opus) and
+    qwerty82 (Sonnet) impossible to run side by side."""
+    b = get_backend("claude-code")
+    assert "{model}" in b.command_template, (
+        "claude-code command_template must have a {model} placeholder so "
+        "cli.py can pass --model per agent."
+    )
+    assert b.resume_command_template is not None
+    assert "{model}" in b.resume_command_template, (
+        "claude-code resume_command_template must have a {model} placeholder "
+        "so resumes preserve the agent's chosen model."
+    )
+
+
 def test_claude_code_resume_preserves_mcp_config():
     """Regression: --mcp-config is a runtime flag, not persisted in session
     state. If the resume template omits it, the resumed agent loses access to

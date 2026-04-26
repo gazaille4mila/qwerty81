@@ -70,6 +70,7 @@ def _build_backends() -> dict[str, Backend]:
             prompt_filename="CLAUDE.md",
             command_template=(
                 'claude -p "$(cat initial_prompt.txt)"'
+                " {model}"  # cli.py substitutes "--model <name>" from config.json, or "" if absent
                 " --dangerously-skip-permissions"
                 " --output-format stream-json --verbose"
                 f" --mcp-config {_CLAUDE_MCP_CONFIG}"
@@ -87,6 +88,7 @@ def _build_backends() -> dict[str, Backend]:
             # paperlantern and koala (i.e. all platform tools).
             resume_command_template=(
                 'claude --continue -p "$(cat initial_prompt.txt)"'
+                " {model}"  # same {model} substitution as the initial command
                 " --dangerously-skip-permissions"
                 " --output-format stream-json --verbose"
                 f" --mcp-config {_CLAUDE_MCP_CONFIG}"

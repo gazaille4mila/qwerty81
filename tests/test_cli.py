@@ -362,6 +362,87 @@ def test_launch_claude_code_resume_collapses_mcp_config_braces(tmp_path):
     )
 
 
+def _launch_capture_script(tmp_path, agent_config):
+    """Helper: run `reva launch --name foo` against a mocked config and
+    return the rendered script. Used by the model-flag tests below."""
+    agents_dir = tmp_path / "agents"
+    agent_dir = agents_dir / "foo"
+    agent_dir.mkdir(parents=True)
+    (agent_dir / "config.json").write_text(json.dumps(agent_config), encoding="utf-8")
+    (agent_dir / "system_prompt.md").write_text("hi", encoding="utf-8")
+    (agent_dir / ".api_key").write_text("KEY", encoding="utf-8")
+
+    global_rules = tmp_path / "GLOBAL_RULES.md"
+    global_rules.write_text("R\n", encoding="utf-8")
+    platform_skills = tmp_path / "platform_skills.md"
+    platform_skills.write_text("S\n", encoding="utf-8")
+
+    mock_cfg = MagicMock()
+    mock_cfg.agents_dir = agents_dir
+    mock_cfg.global_rules_path = global_rules
+    mock_cfg.platform_skills_path = platform_skills
+    mock_cfg.github_repo = "https://github.com/test-owner/my-fork"
+    mock_cfg.koala_base_url = "https://koala.science"
+
+    captured = {}
+
+    def fake_create_session(name, cwd, script):
+        captured["script"] = script
+
+    with patch("reva.cli._get_config", return_value=mock_cfg), \
+         patch("reva.cli.create_session", side_effect=fake_create_session):
+        result = _invoke("launch", "--name", "foo")
+        assert result.exit_code == 0, result.output
+
+    return captured["script"]
+
+
+def test_launch_with_model_in_config_emits_model_flag(tmp_path):
+    """When `model` is set in config.json, the rendered claude command must
+    pass `--model <name>` so the agent runs on its chosen LLM. Without this,
+    qwerty81 (Opus) and qwerty82 (Sonnet) would share whatever model claude
+    was last configured with — defeating the model A/B for the three-agent plan.
+    """
+    script = _launch_capture_script(tmp_path, {
+        "name": "foo",
+        "backend": "claude-code",
+        "model": "claude-opus-4-7",
+    })
+    assert "--model claude-opus-4-7" in script, (
+        "config.json model field did not propagate to the launch script"
+    )
+
+
+def test_launch_without_model_in_config_omits_model_flag(tmp_path):
+    """When `model` is absent from config.json, do NOT pass `--model` — let
+    the claude CLI use its ambient default. This preserves backward
+    compatibility for agent configs that predate this feature."""
+    script = _launch_capture_script(tmp_path, {
+        "name": "foo",
+        "backend": "claude-code",
+    })
+    assert "--model " not in script, (
+        "model flag leaked into the script even though config has no model field"
+    )
+
+
+def test_launch_with_model_propagates_to_resume_command(tmp_path):
+    """The agent restarts via resume_command_template across SIGTERMs. If
+    --model is only on the initial command, the resumed session would silently
+    drop to claude's default — breaking the model A/B mid-soak. Both paths
+    must carry the same --model flag."""
+    script = _launch_capture_script(tmp_path, {
+        "name": "foo",
+        "backend": "claude-code",
+        "model": "claude-sonnet-4-6",
+    })
+    # script contains both initial and resume invocations of claude
+    occurrences = script.count("--model claude-sonnet-4-6")
+    assert occurrences >= 2, (
+        f"expected --model in BOTH initial and resume commands, found {occurrences}"
+    )
+
+
 # ── prompt assembly ──────────────────────────────────────────────────
 
 def test_assemble_prompt_three_part_concatenation(tmp_path, monkeypatch):
