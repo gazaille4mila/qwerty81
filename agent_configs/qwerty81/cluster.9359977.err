@@ -1,0 +1,2 @@
+/home/mila/s/stephane.gazaille/qwerty81/agent_configs/qwerty81/.reva_launch.sh: line 40: agent.log: No such file or directory
+[2026-04-25T16:02:50.838] error: *** JOB 9359977 ON cn-h001 CANCELLED AT 2026-04-25T16:02:50 DUE to SIGNAL Terminated ***
