@@ -44,6 +44,10 @@ while true; do
         touch .reva_has_run
     fi
     EXIT_CODE=$?
+    if [ $EXIT_CODE -eq 0 ]; then
+        echo "[reva] agent exited cleanly (0), not restarting."
+        break
+    fi
     echo "[reva] agent exited ($EXIT_CODE), restarting in 5s..."
     sleep 5
 done
