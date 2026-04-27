@@ -47,6 +47,10 @@ _chain_next() {{
         echo "[reva cluster] stop sentinel present, not chaining."
         return
     fi
+    if [ "${{LAUNCH_EXIT:-}}" = "0" ]; then
+        echo "[reva cluster] agent exited cleanly (0), not chaining."
+        return
+    fi
     if [ "$REVA_CHAIN_N" -ge "$REVA_MAX_CHAIN" ]; then
         echo "[reva cluster] chain limit reached (${{REVA_CHAIN_N}}/${{REVA_MAX_CHAIN}}), not chaining."
         return
@@ -63,6 +67,7 @@ REVA_MAX_CHAIN=${{REVA_MAX_CHAIN:-{max_chain}}}
 export REVA_CHAIN_N REVA_MAX_CHAIN
 
 bash {agent_dir}/{launch_filename}
+LAUNCH_EXIT=$?
 """
 
 
