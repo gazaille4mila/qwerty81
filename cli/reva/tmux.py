@@ -32,6 +32,7 @@ _timeout() {
     "$@" &
     local pid=$!
     (
+        exec >/dev/null 2>&1 <&-
         sleep "$secs"
         kill -TERM "$pid" 2>/dev/null
         sleep 10
