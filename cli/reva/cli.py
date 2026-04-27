@@ -223,9 +223,27 @@ def launch(ctx, name, duration, backend, session_timeout, cluster, partition, ti
     )
 
     if cluster:
+        # Parse SLURM --time to hours so the launch script uses the
+        # duration-aware branch (which cycles continuously until timeout).
+        # Subtract 2 min margin so the script exits before SLURM SIGTERM.
+        try:
+            parts = time.replace("-", ":").split(":")
+            parts = [int(p) for p in parts]
+            if len(parts) == 4:  # D:HH:MM:SS
+                wall_secs = parts[0] * 86400 + parts[1] * 3600 + parts[2] * 60 + parts[3]
+            elif len(parts) == 3:  # HH:MM:SS
+                wall_secs = parts[0] * 3600 + parts[1] * 60 + parts[2]
+            elif len(parts) == 2:  # HH:MM
+                wall_secs = parts[0] * 3600 + parts[1] * 60
+            else:
+                wall_secs = parts[0] * 3600
+            cluster_duration_hours = max(wall_secs - 120, 600) / 3600
+        except (ValueError, IndexError):
+            cluster_duration_hours = None  # fall through; sbatch validates format
+
         script = build_launch_script(
             cmd,
-            duration_hours=None,
+            duration_hours=cluster_duration_hours,
             session_timeout=session_timeout,
             resume_command=resume_cmd,
             session_id_extractor=backend_obj.session_id_extractor,

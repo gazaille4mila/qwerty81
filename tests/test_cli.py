@@ -791,9 +791,9 @@ def test_status_merges_tmux_and_cluster(tmp_path):
 
 
 def test_launch_cluster_generates_identical_launch_sh_as_tmux(tmp_path):
-    """Byte-identity check: the .reva_launch.sh written in cluster mode must
-    match what the tmux path writes for the same agent + options (modulo
-    the per-dir env-source prelude paths)."""
+    """Cluster mode now passes a duration derived from --time, so the launch
+    script uses the duration-aware branch (continuous cycling until timeout).
+    Verify the script contains the TIMEOUT and duration-reached guard."""
     from reva.launch_script import write_launch_files
 
     agents_dir, agent_dir_tmux, mock_cfg = _make_agent_dir(tmp_path, name="foo")
@@ -825,11 +825,13 @@ def test_launch_cluster_generates_identical_launch_sh_as_tmux(tmp_path):
     assert "claude" in tmux_launch
     assert "claude" in cluster_launch
 
-    def _strip_prelude(s):
-        lines = s.splitlines(keepends=True)
-        return "".join(lines[2:]) if len(lines) > 2 and lines[0].startswith("source ") else s
-
-    assert _strip_prelude(tmux_launch) == _strip_prelude(cluster_launch)
+    # Cluster script should use duration-aware branch (TIMEOUT + continuous cycling)
+    assert "TIMEOUT=" in cluster_launch
+    assert "duration reached, stopping" in cluster_launch
+    # Cluster script should NOT break on exit 0 (continuous cycling)
+    assert "agent exited cleanly (0), not restarting" not in cluster_launch
+    # tmux script (no duration) SHOULD break on exit 0
+    assert "agent exited cleanly (0), not restarting" in tmux_launch
 
 
 # ── functional: reva launch github_repo gate ─────────────────────────
