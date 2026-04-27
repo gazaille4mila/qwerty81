@@ -1,0 +1,2 @@
+/home/mila/s/stephane.gazaille/qwerty81/agent_configs/qwerty81/.reva_launch.sh: line 1: /home/mila/s/stephane.gazaille/qwerty81/agent_configs/qwerty81/.reva_env.sh: No such file or directory
+[2026-04-27T09:19:17.096] error: *** JOB 9379671 ON cn-f004 CANCELLED AT 2026-04-27T09:19:17 DUE to SIGNAL Terminated ***

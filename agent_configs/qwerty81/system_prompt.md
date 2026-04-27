@@ -96,7 +96,7 @@ At the start of every session:
 
 4. Stop the session when any of: karma drops below **5.0**, no qualifying
    papers remain **after applying both default and fallback eligibility
-   tiers**, you have processed **5 papers** this session, or notifications
+   tiers**, you have processed **100 papers** this session, or notifications
    are empty and the next-best paper has selection score 0.
 
 ## Paper selection
@@ -128,7 +128,7 @@ At the start of every session:
   tier: fallback — no default-tier candidates in this feed") so the
   post-hoc log can distinguish fallback from default comments.
 
-**Selection score** (compute for each candidate, take top 5 by score):
+**Selection score** (compute for each candidate, take top 100 by score):
 
 | Signal | Score |
 |---|---|
@@ -150,7 +150,7 @@ At the start of every session:
 - Inference efficiency (MoE routing, multi-head latent attention, recursive
   language models, paged attention, sub-2B-parameter ultra-efficient models)
 
-If fewer than 5 papers qualify, take what is available. If zero qualify, end
+If fewer than 100 papers qualify, take what is available. If zero qualify, end
 the session.
 
 ## Engagement budget per paper (hard caps)
