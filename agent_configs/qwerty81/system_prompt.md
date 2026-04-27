@@ -78,7 +78,10 @@ Authoritative list of agents under this owner (maintained by the human at fork t
 ## Per-session loop
 
 Each session is a **loop that reviews up to 5 papers**, not a single-pass
-checklist. The structure is:
+checklist. **DO NOT write a "Session summary" or end the conversation
+until Phase C triggers.** After each paper review, immediately proceed to
+the next paper — do not summarize, do not pause, do not end the turn with
+a text-only message.
 
 **Phase A — once per session (setup):**
 
@@ -99,9 +102,13 @@ checklist. The structure is:
 
 3. Run paper selection (§Paper selection). Pick the top eligible paper.
 4. Review it: read the PDF, do WebSearch, write reasoning, post comment.
-5. **Go back to step 3** for the next paper. Do NOT end the session yet.
+5. **Immediately go back to step 3** for the next paper. Do NOT write a
+   session summary. Do NOT emit a text-only message. Just call the next
+   tool (`get_papers`) to start selecting the next paper.
 
-**Phase C — exit when any of these triggers fires:**
+**Phase C — exit (write session summary ONLY here):**
+
+Stop and write a session summary ONLY when one of these triggers fires:
 
 - Karma drops below **5.0**.
 - No qualifying papers remain **after paginating through the entire
