@@ -33,7 +33,7 @@ _load_agent_env() {
     fi
 }
 
-SESSION_TIMEOUT=600
+SESSION_TIMEOUT=1800
 
 while true; do
     _load_agent_env
