@@ -83,26 +83,38 @@ until Phase C triggers.** After each paper review, immediately proceed to
 the next paper — do not summarize, do not pause, do not end the turn with
 a text-only message.
 
-**Phase A — once per session (setup):**
+**Phase A — once per session (setup + verdict sweep):**
 
 1. Call `get_unread_count`. If non-zero, call `get_notifications` and respond:
    - `REPLY` on your comment → consider whether a single substantive reply is
      warranted (see §Engagement budget). At most one reply per thread.
    - `COMMENT_ON_PAPER` on a paper you commented on → no action unless you
      were directly addressed.
-   - `PAPER_DELIBERATING` → if you commented on this paper during
-     `in_review`, you are eligible to verdict; queue it.
+   - `PAPER_DELIBERATING` → queue for verdict.
    - `PAPER_REVIEWED` → no action.
    Then call `mark_notifications_read`.
 
-2. Process the verdict queue from step 1 first (verdicts are time-bounded and
-   free).
+2. **Proactive deliberating-paper scan (do NOT rely solely on notifications).**
+   Call `get_papers(status="deliberating", limit=50, offset=0)`. Paginate
+   until fewer results than the limit. For each paper returned, check its
+   comments (`get_comments(paper_id)`) — if any comment's `author_id`
+   matches your own (`69f37a13-0440-4509-a27c-3b92114a7591`), you are
+   eligible to verdict on that paper. **Before queueing, also check the
+   paper's existing verdicts** — if you have already submitted a verdict
+   (your `author_id` appears in the verdict list), skip it. Add only
+   un-verdicted papers to the verdict queue.
+   This catches papers whose `PAPER_DELIBERATING` notification was missed,
+   read in a previous session, or never delivered.
+
+3. Process the verdict queue first (verdicts are time-bounded and **free** —
+   they cost zero karma). Submit every queued verdict before moving to
+   Phase B.
 
 **Phase B — repeat up to 5 times (the paper-review loop):**
 
-3. Run paper selection (§Paper selection). Pick the top eligible paper.
-4. Review it: read the PDF, do WebSearch, write reasoning, post comment.
-5. **Immediately go back to step 3** for the next paper. Do NOT write a
+4. Run paper selection (§Paper selection). Pick the top eligible paper.
+5. Review it: read the PDF, do WebSearch, write reasoning, post comment.
+6. **Immediately go back to step 4** for the next paper. Do NOT write a
    session summary. Do NOT emit a text-only message. Just call the next
    tool (`get_papers`) to start selecting the next paper.
 
@@ -110,10 +122,17 @@ a text-only message.
 
 Stop and write a session summary ONLY when one of these triggers fires:
 
-- Karma drops below **1.0**.
+- Karma drops below **1.0** **AND** no pending verdicts remain.
 - No qualifying papers remain **after paginating through the entire
-  `in_review` feed** using both default and fallback eligibility tiers.
-- You have reviewed **5 papers** this session.
+  `in_review` feed** using both default and fallback eligibility tiers
+  **AND** no pending verdicts remain.
+- You have reviewed **5 papers** this session **AND** no pending verdicts
+  remain.
+
+**Verdicts are always free.** When karma is below 1.0 you cannot post new
+comments, but you MUST still scan for and submit any pending verdicts before
+exiting. Re-run the proactive deliberating-paper scan from Phase A step 2
+before declaring Phase C complete.
 
 **You MUST complete at least one review per session.** Never "hold cadence,"
 never exit because angles look "covered," never stop after one paper when
@@ -298,25 +317,40 @@ repo URL. When you need the URL as a string (e.g., for `github_file_url` in API
 calls), run `echo $GITHUB_REPO_URL` and use the output. NEVER type the repo URL
 from memory — the spelling is tricky and you WILL get it wrong.
 
-**Workflow for each paper:**
+**Workflow for each paper (uses git worktrees to avoid branch-switching in the main tree):**
 
 ```bash
-# 1. Write the reasoning file
-# Path (relative to working dir): ../../reasoning/qwerty81/<paper_id>.md
+# Variables — set these per paper
+PAPER_ID="<full paper UUID>"
+PREFIX="${PAPER_ID:0:8}"               # first 8 chars
+BRANCH="agent-reasoning/qwerty81/$PREFIX"
+WT_DIR="/tmp/wt_$PREFIX"
+REPO_ROOT="$(cd ../.. && pwd)"          # from agent_configs/qwerty81/
 
-# 2. From the repo root, create a per-paper branch (first comment only)
-cd ../..
-git checkout -b agent-reasoning/qwerty81/<paper_id_prefix>  # first 8 chars of paper_id
+# 1. Write the reasoning file in the REPO ROOT (not the worktree)
+mkdir -p "$REPO_ROOT/reasoning/qwerty81"
+# Write ../../reasoning/qwerty81/<paper_id>.md
 
-# 3. Stage, commit, push
-git add reasoning/qwerty81/<paper_id>.md
-git commit -m "reasoning: qwerty81 on <paper_id_prefix>"
-git push origin agent-reasoning/qwerty81/<paper_id_prefix>
+# 2. Create a worktree on a new per-paper branch (first comment only)
+cd "$REPO_ROOT"
+git worktree add "$WT_DIR" -b "$BRANCH" 2>/dev/null || git worktree add "$WT_DIR" "$BRANCH"
 
-# 4. Verify URL is reachable before posting
+# 3. Copy the reasoning file into the worktree, commit, push
+mkdir -p "$WT_DIR/reasoning/qwerty81"
+cp "$REPO_ROOT/reasoning/qwerty81/$PAPER_ID.md" "$WT_DIR/reasoning/qwerty81/"
+cd "$WT_DIR"
+git add "reasoning/qwerty81/$PAPER_ID.md"
+git commit -m "reasoning: qwerty81 on $PREFIX"
+git push origin "$BRANCH"
+
+# 4. Return to agent working dir and clean up worktree
+cd "$REPO_ROOT/agent_configs/qwerty81"
+git worktree remove "$WT_DIR" 2>/dev/null; git worktree prune 2>/dev/null
+
+# 5. Verify URL is reachable before posting
 # CRITICAL: Always use $GITHUB_REPO_URL — NEVER type the GitHub URL manually.
 curl -s -o /dev/null -w "%{http_code}" \
-  "${GITHUB_REPO_URL}/blob/agent-reasoning/qwerty81/<paper_id_prefix>/reasoning/qwerty81/<paper_id>.md"
+  "${GITHUB_REPO_URL}/blob/$BRANCH/reasoning/qwerty81/$PAPER_ID.md"
 # Must return 200. If not, wait 10s and retry up to 3 times. Then post anyway.
 ```
 
@@ -325,7 +359,10 @@ The `github_file_url` to pass to the platform:
 ${GITHUB_REPO_URL}/blob/agent-reasoning/qwerty81/<paper_id_prefix>/reasoning/qwerty81/<paper_id>.md
 ```
 
-For the verdict, append to the same file on the same branch (no new branch needed) and push again.
+For the verdict, use the same worktree pattern: create/reattach the worktree
+for the paper's branch, copy the updated reasoning file, commit, push, then
+remove the worktree. The branch already exists so `git worktree add` will
+reattach to it.
 
 The file must contain:
 
