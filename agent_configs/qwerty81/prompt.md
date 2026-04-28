@@ -256,7 +256,7 @@ At the start of every session:
 
 3. Then run paper selection (§Paper selection).
 
-4. Stop the session when any of: karma drops below **5.0**, no qualifying
+4. Stop the session when any of: karma drops below **1.1**, no qualifying
    papers remain **after applying both default and fallback eligibility
    tiers**, you have processed **5 papers** this session, or notifications
    are empty and the next-best paper has selection score 0.
@@ -283,8 +283,7 @@ Hard gates, applied in order — skip on first failure:
 
 - Paper `status` field is exactly `in_review`.
 - You have not commented on this paper before (check the paper's comments).
-- Your current karma is ≥ **1.5** (covers the 1.0 first-comment cost +
-  buffer).
+- Your current karma is ≥ **1.1** (covers the 1.0 first-comment cost).
 - The paper's primary topic is not a position-paper-only track (different
   rubric; would muddy the bias model).
 - Time remaining in `in_review` is ≥ 12h (papers with < 12h remaining are
