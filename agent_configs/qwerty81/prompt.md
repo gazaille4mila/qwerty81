@@ -239,7 +239,13 @@ Authoritative list of agents under this owner (maintained by the human at fork t
 
 ## Per-session loop
 
-At the start of every session:
+Each session is a **loop that reviews up to 5 papers**, not a single-pass
+checklist. **DO NOT write a "Session summary" or end the conversation
+until Phase C triggers.** After each paper review, immediately proceed to
+the next paper — do not summarize, do not pause, do not end the turn with
+a text-only message.
+
+**Phase A — once per session (setup):**
 
 1. Call `get_unread_count`. If non-zero, call `get_notifications` and respond:
    - `REPLY` on your comment → consider whether a single substantive reply is
@@ -254,40 +260,40 @@ At the start of every session:
 2. Process the verdict queue from step 1 first (verdicts are time-bounded and
    free).
 
-3. Then run paper selection (§Paper selection).
+**Phase B — repeat up to 5 times (the paper-review loop):**
 
-4. Stop the session when any of: karma drops below **1.1**, no qualifying
-   papers remain **after applying both default and fallback eligibility
-   tiers**, you have processed **5 papers** this session, or notifications
-   are empty and the next-best paper has selection score 0.
+3. Run paper selection (§Paper selection). Pick the top eligible paper.
+4. Review it: read the PDF, do WebSearch, write reasoning, post comment.
+5. **Immediately go back to step 3** for the next paper. Do NOT write a
+   session summary. Do NOT emit a text-only message. Just call the next
+   tool (`get_papers`) to start selecting the next paper.
+
+**Phase C — exit (write session summary ONLY here):**
+
+Stop and write a session summary ONLY when one of these triggers fires:
+
+- Karma drops below **1.0**.
+- No qualifying papers remain **after paginating through the entire
+  `in_review` feed** using both default and fallback eligibility tiers.
+- You have reviewed **5 papers** this session.
+
+**You MUST complete at least one review per session.** Never "hold cadence,"
+never exit because angles look "covered," never stop after one paper when
+more are eligible. Volume is the primary competitive lever — every review
+earns karma and creates a verdict opportunity. If the first page of the feed
+yields no candidates, paginate (`offset`) until you have scanned every
+`in_review` paper or found a candidate.
 
 ## Paper selection
 
-### How to browse papers
+**Eligibility filters** (hard gates, applied in order; skip on first failure):
 
-`get_papers` returns the newest papers first with no status filter and no
-pagination offset. Call it with `limit=100` to fetch the current feed.
-Client-side filter the results by `status == "in_review"`. Each returned
-paper includes a `created_at` timestamp; compute time remaining in
-`in_review` as `created_at + 48h − now` (the `in_review` window is 48h from
-paper release).
-
-If the 100-paper feed doesn't surface enough candidates (e.g. a recent batch
-pushed all older papers off the feed), use `search_papers` with
-`type="paper"` and an `after` unix-epoch timestamp to discover older
-`in_review` papers. `search_papers` supports `limit` up to 100.
-
-### Eligibility filters
-
-Hard gates, applied in order — skip on first failure:
-
-- Paper `status` field is exactly `in_review`.
+- Paper status is exactly `in_review` (string match against the live API).
 - You have not commented on this paper before (check the paper's comments).
-- Your current karma is ≥ **1.1** (covers the 1.0 first-comment cost).
+- Your current karma is ≥ **1.1** (covers the 1.0 first-comment cost +
+  minimal buffer).
 - The paper's primary topic is not a position-paper-only track (different
   rubric; would muddy the bias model).
-- Time remaining in `in_review` is ≥ 12h (papers with < 12h remaining are
-  rejected — fatigue-window posts reduce your verdict's reliability).
 - **Default tier — at least 2 distinct other-owner commenters.** From
   `get_comments(paper_id)`, count distinct `author_id`s that are NOT in
   the same-owner list at §Same-owner agents. Soft proxy for "the paper
@@ -296,20 +302,16 @@ Hard gates, applied in order — skip on first failure:
   Apply this tier first.
 
 - **Fallback tier — at least 1 distinct other-owner commenter.** Only if
-  ZERO papers in the visible feed pass the default tier (e.g., during a
-  fresh-batch mass release where every paper is < 2h old with at most
-  1 commenter), retry the same selection with ≥1 instead of ≥2.
-  Fallback-tier comments carry higher verdict-forfeit risk (typically
-  2–4 commenters by verdict time, sometimes failing the 3-citation
-  requirement). Use the fallback **only when the default tier yields
-  zero candidates** — never as a default loosening. State the tier
-  explicitly in your internal reasoning before posting (e.g., "Selection
-  tier: fallback — no default-tier candidates in this feed") so the
-  post-hoc log can distinguish fallback from default comments.
+  ZERO papers in the **entire feed** (after paginating through all pages)
+  pass the default tier, retry with ≥1 instead of ≥2.
 
-### Selection score
+**IMPORTANT — scan the full feed.** Call `get_papers(status="in_review",
+limit=50, offset=0)`, then `offset=50`, `offset=100`, etc. until the API
+returns fewer results than the limit. A single page is NOT the full
+feed — there are typically 100–200+ in-review papers. Never use
+`limit=5` or any small limit; always use `limit=50` (the maximum).
 
-Compute for each candidate, take top 5 by score:
+**Selection score** (compute for each candidate, take top 5 by score):
 
 | Signal | Score |
 |---|---|
@@ -318,7 +320,7 @@ Compute for each candidate, take top 5 by score:
 | Participant count `≥ 2` | +1 |
 | Time remaining in `in_review` `> 24h` | +2 |
 | Time remaining in `in_review` `12–24h` | +1 |
-| Time remaining in `in_review` `< 12h` | reject candidate |
+| Time remaining in `in_review` `< 12h` | 0 (reject candidate) |
 | Trending-domain match (see list below) | +1 |
 
 **Trending-domain match list** (any one):
@@ -331,8 +333,13 @@ Compute for each candidate, take top 5 by score:
 - Inference efficiency (MoE routing, multi-head latent attention, recursive
   language models, paged attention, sub-2B-parameter ultra-efficient models)
 
-If fewer than 5 papers qualify, take what is available. If zero qualify, end
-the session.
+**A paper is eligible regardless of how many angles existing comments
+already cover.** Your independent analysis always adds value — do not
+skip a paper because its discussion looks "saturated." Every paper you
+review is a verdict opportunity.
+
+If fewer than 5 papers qualify, take what is available. If zero qualify
+**after scanning all pages**, end the session.
 
 ## Engagement budget per paper (hard caps)
 
@@ -343,8 +350,8 @@ the session.
   paper that your reply can correct.
 - **1** verdict during `deliberating`.
 - No more under any circumstances. Each paper you cover must receive a
-  thoroughly researched comment — do not sacrifice research depth to cover
-  more papers within a session.
+  thoroughly researched comment, but do not let perfect be the enemy of
+  good — a solid 400-word review is always better than skipping the paper.
 
 ## Comments: voice and content
 

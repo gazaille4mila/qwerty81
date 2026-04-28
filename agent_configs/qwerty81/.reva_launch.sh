@@ -8,6 +8,7 @@ _timeout() {
     "$@" &
     local pid=$!
     (
+        exec >/dev/null 2>&1 <&-
         sleep "$secs"
         kill -TERM "$pid" 2>/dev/null
         sleep 10
@@ -33,21 +34,25 @@ _load_agent_env() {
     fi
 }
 
+TIMEOUT=7080
 SESSION_TIMEOUT=1800
+START=$(date +%s)
 
 while true; do
+    ELAPSED=$(( $(date +%s) - START ))
+    [ $ELAPSED -ge $TIMEOUT ] && echo "[reva] duration reached, stopping." && break
+    REMAINING=$((TIMEOUT - ELAPSED))
+    # cap each invocation at SESSION_TIMEOUT so idle backends get cycled
+    PER_RUN=$((REMAINING < SESSION_TIMEOUT ? REMAINING : SESSION_TIMEOUT))
+
     _load_agent_env
     if [ -f .reva_has_run ]; then
-        _timeout "${SESSION_TIMEOUT}" claude --continue -p "$(cat initial_prompt.txt)" --model claude-opus-4-7 --dangerously-skip-permissions --output-format stream-json --verbose --mcp-config '{"mcpServers":{"paperlantern":{"type":"http","url":"https://mcp.paperlantern.ai/chat/mcp?key=pl_cd1099cd5b35f6c193f9"},"koala":{"type":"http","url":"https://koala.science/mcp","headers":{"Authorization":"Bearer '"$COALESCENCE_API_KEY"'"}}}}' 2>&1 | tee -a agent.log
+        _timeout "${PER_RUN}" claude --continue -p "$(cat initial_prompt.txt)" --model claude-sonnet-4-6 --dangerously-skip-permissions --output-format stream-json --verbose --mcp-config '{"mcpServers":{"paperlantern":{"type":"http","url":"https://mcp.paperlantern.ai/chat/mcp?key=pl_cd1099cd5b35f6c193f9"},"koala":{"type":"http","url":"https://koala.science/mcp","headers":{"Authorization":"Bearer '"$COALESCENCE_API_KEY"'"}}}}' 2>&1 | tee -a agent.log
     else
-        _timeout "${SESSION_TIMEOUT}" claude -p "$(cat initial_prompt.txt)" --model claude-opus-4-7 --dangerously-skip-permissions --output-format stream-json --verbose --mcp-config '{"mcpServers":{"paperlantern":{"type":"http","url":"https://mcp.paperlantern.ai/chat/mcp?key=pl_cd1099cd5b35f6c193f9"},"koala":{"type":"http","url":"https://koala.science/mcp","headers":{"Authorization":"Bearer '"$COALESCENCE_API_KEY"'"}}}}' 2>&1 | tee -a agent.log
+        _timeout "${PER_RUN}" claude -p "$(cat initial_prompt.txt)" --model claude-sonnet-4-6 --dangerously-skip-permissions --output-format stream-json --verbose --mcp-config '{"mcpServers":{"paperlantern":{"type":"http","url":"https://mcp.paperlantern.ai/chat/mcp?key=pl_cd1099cd5b35f6c193f9"},"koala":{"type":"http","url":"https://koala.science/mcp","headers":{"Authorization":"Bearer '"$COALESCENCE_API_KEY"'"}}}}' 2>&1 | tee -a agent.log
         touch .reva_has_run
     fi
     EXIT_CODE=$?
-    if [ $EXIT_CODE -eq 0 ]; then
-        echo "[reva] agent exited cleanly (0), not restarting."
-        break
-    fi
     echo "[reva] agent exited ($EXIT_CODE), restarting in 5s..."
     sleep 5
 done
