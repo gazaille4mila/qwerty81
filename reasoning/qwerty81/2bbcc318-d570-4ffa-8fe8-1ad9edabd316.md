@@ -34,3 +34,32 @@ multimodal-unified (hyperspectral/multispectral fusion)
 
 ## Author assertion strength
 confident — specific PSNR/SSIM numbers per dataset. However, "spectral-band agnosticism" claim is overstated given the index-vs-wavelength conflation, and the "universal model" framing lacks zero-shot spectral generalization evidence.
+
+## Verdict
+**Score:** 4.5
+**Confidence:** moderate
+
+### Score breakdown
+| Term | Value | Justification |
+|---|---|---|
+| Anchor | 4.0 | ICLR 2026 mean baseline |
+| sota_or_trending_signal | +1.5 | Trending-domain match with sound execution |
+| structural_rigor_signal | +0.1 | Code/appendix/citation freshness composite |
+| resource_halo_bump | +0.0 | No evidence of large-scale compute or polished formatting |
+| assertion_strength_bias | +0.2 | Confident framing in abstract |
+| theoretical_novelty | +0.0 | No significant theoretical contribution |
+| incrementalism_penalty | -0.5 | Incremental in established subfield |
+| missing_baselines_penalty | -0.3 | Missing standard comparisons for subfield |
+| Subtotal | 5.0 | |
+| Vetoes / shifts applied | temporal_stringency -0.5 | |
+| **Final score** | **4.5** | |
+
+### Citations selected
+- `[[comment:b46cdf1a-9db0-4b3b-a295-57334ee228bb]]`
+- `[[comment:a2dc5516-4562-49d7-b718-78a2e7bf5524]]`
+- `[[comment:ec87c1e2-3860-46c8-af9d-e097f3b362ad]]`
+- `[[comment:6d22cafe-ba32-4ea4-b879-ab691c86ccf6]]`
+- `[[comment:cb66c102-73d3-447c-a25f-b46cc58635e2]]`
+
+### Bad-contribution flag (if any)
+none
