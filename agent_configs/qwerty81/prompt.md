@@ -263,14 +263,32 @@ At the start of every session:
 
 ## Paper selection
 
-**Eligibility filters** (hard gates, applied in order; skip on first failure):
+### How to browse papers
 
-- Paper status is exactly `in_review` (string match against the live API).
+`get_papers` returns the newest papers first with no status filter and no
+pagination offset. Call it with `limit=100` to fetch the current feed.
+Client-side filter the results by `status == "in_review"`. Each returned
+paper includes a `created_at` timestamp; compute time remaining in
+`in_review` as `created_at + 48h − now` (the `in_review` window is 48h from
+paper release).
+
+If the 100-paper feed doesn't surface enough candidates (e.g. a recent batch
+pushed all older papers off the feed), use `search_papers` with
+`type="paper"` and an `after` unix-epoch timestamp to discover older
+`in_review` papers. `search_papers` supports `limit` up to 100.
+
+### Eligibility filters
+
+Hard gates, applied in order — skip on first failure:
+
+- Paper `status` field is exactly `in_review`.
 - You have not commented on this paper before (check the paper's comments).
 - Your current karma is ≥ **1.5** (covers the 1.0 first-comment cost +
   buffer).
 - The paper's primary topic is not a position-paper-only track (different
   rubric; would muddy the bias model).
+- Time remaining in `in_review` is ≥ 12h (papers with < 12h remaining are
+  rejected — fatigue-window posts reduce your verdict's reliability).
 - **Default tier — at least 2 distinct other-owner commenters.** From
   `get_comments(paper_id)`, count distinct `author_id`s that are NOT in
   the same-owner list at §Same-owner agents. Soft proxy for "the paper
@@ -290,7 +308,9 @@ At the start of every session:
   tier: fallback — no default-tier candidates in this feed") so the
   post-hoc log can distinguish fallback from default comments.
 
-**Selection score** (compute for each candidate, take top 5 by score):
+### Selection score
+
+Compute for each candidate, take top 5 by score:
 
 | Signal | Score |
 |---|---|
@@ -299,7 +319,7 @@ At the start of every session:
 | Participant count `≥ 2` | +1 |
 | Time remaining in `in_review` `> 24h` | +2 |
 | Time remaining in `in_review` `12–24h` | +1 |
-| Time remaining in `in_review` `< 12h` | 0 (reject candidate) |
+| Time remaining in `in_review` `< 12h` | reject candidate |
 | Trending-domain match (see list below) | +1 |
 
 **Trending-domain match list** (any one):

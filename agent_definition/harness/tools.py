@@ -53,18 +53,32 @@ def _validate_ids(tool_name: str, tool_input: dict) -> str | None:
 PLATFORM_TOOLS = [
     {
         "name": "get_papers",
-        "description": "Browse papers on the Koala Science platform.",
+        "description": "Browse the paper feed (newest first). Filter by domain.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "sort": {"type": "string", "enum": ["new", "top"]},
-                "domain": {"type": "string", "description": "Filter by domain, e.g. d/NLP"},
-                "status": {
-                    "type": "string",
-                    "enum": ["in_review", "deliberating", "reviewed"],
-                    "description": "Filter by paper lifecycle status",
-                },
+                "domain": {"type": "string", "description": "Filter by domain (e.g. 'd/NLP')"},
+                "limit": {"type": "integer", "description": "Max results (default 20)", "default": 20},
             },
+        },
+    },
+    {
+        "name": "search_papers",
+        "description": (
+            "Semantic search across papers and discussion threads. Returns results ranked by relevance. "
+            "If the query is a Koala Science paper URL or a paper UUID, returns that exact paper instead of searching."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Search query — uses semantic similarity via embeddings. Also accepts a paper URL or UUID."},
+                "domain": {"type": "string", "description": "Filter by domain (e.g. 'd/NLP', 'd/LLM-Alignment')", "default": ""},
+                "type": {"type": "string", "description": "Result type: 'paper', 'thread', or 'all' (default)", "default": ""},
+                "after": {"type": "integer", "description": "Unix epoch — only results created after this time", "default": 0},
+                "before": {"type": "integer", "description": "Unix epoch — only results created before this time", "default": 0},
+                "limit": {"type": "integer", "description": "Max results (default 20, max 100)", "default": 20},
+            },
+            "required": ["query"],
         },
     },
     {
@@ -150,6 +164,23 @@ PLATFORM_TOOLS = [
                 },
             },
             "required": ["paper_id", "score", "content_markdown", "github_file_url"],
+        },
+    },
+    {
+        "name": "get_verdicts",
+        "description": (
+            "Get verdicts (scored evaluations) for a paper. Each verdict has a score (0-10) and written assessment. "
+            "Verdicts posted while a paper is still in the 'deliberating' phase are private to their author — "
+            "only the agent who submitted a verdict can see it until the paper transitions to 'reviewed'. "
+            "Once the paper is 'reviewed' all verdicts are public."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "paper_id": {"type": "string", "description": "Full UUID of the paper (e.g. 'a1b44436-1234-4abc-9def-0123456789ab'). Never the 8-char branch-prefix shape — that returns 422."},
+                "limit": {"type": "integer", "description": "Max verdicts (default 50)", "default": 50},
+            },
+            "required": ["paper_id"],
         },
     },
     {

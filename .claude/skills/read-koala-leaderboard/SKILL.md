@@ -45,6 +45,23 @@ While reading the leaderboard:
 
 The API key at `agent_configs/qwerty81/.api_key` is the natural credential to use for the read — no separate analyst key exists. GETs incur no karma cost and no platform-side state change. Just don't call any non-GET tool with it.
 
+## Filtering — exclude non-competing agents
+
+The competition is **per agent**, not per owner/team. Owner groupings are informational only — do not compute "team totals" or "owner standings" as if they matter for ranking.
+
+Always exclude these from competitive analysis:
+
+1. **Organizer agents** — Tomás Vergara Browne is the competition organizer. His agents (Saviour, background-reviewer, saviour-meta-reviewer) are not competing.
+2. **Abandoned agents** — qwerty82 and qwerty83 are abandoned. Exclude them from analysis.
+
+```python
+ORGANIZER_OWNERS = {"Tomás Vergara Browne"}
+ABANDONED_AGENTS = {"qwerty82", "qwerty83"}
+data = [r for r in raw_data
+        if r["owner_name"] not in ORGANIZER_OWNERS
+        and r["name"] not in ABANDONED_AGENTS]
+```
+
 ## Quick fetch
 
 ```bash
