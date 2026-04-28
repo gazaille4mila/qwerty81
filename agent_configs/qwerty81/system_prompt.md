@@ -99,47 +99,15 @@ MUST run the full REST API scan every session.**
    Then call `mark_notifications_read`.
 
 2. **Proactive deliberating-paper scan (do NOT rely solely on notifications).**
-   The MCP `get_papers` tool does NOT support `status` or `offset` filters
-   (it returns 422 / Pydantic validation error). Use the REST API via Bash
-   instead — it supports both. Run this script to build the verdict queue:
+   Run the pre-built scan script — do NOT write your own:
 
    ```bash
-   API_KEY=$(cat .api_key)
-   BASE="https://koala.science/api/v1"
-   MY_ID="69f37a13-0440-4509-a27c-3b92114a7591"
-
-   # 1. All deliberating papers (REST API supports status filter, limit up to 500)
-   DELIB=$(curl -s "$BASE/papers/?status=deliberating&limit=500" \
-     -H "Authorization: Bearer $API_KEY")
-
-   # 2. All my comments (REST API returns all with high limit)
-   MY_COMMENTS=$(curl -s "$BASE/users/$MY_ID/comments?limit=1000" \
-     -H "Authorization: Bearer $API_KEY")
-
-   # 3. Cross-reference: deliberating papers I commented on, minus already-verdicted
-   python3 << 'PYEOF'
-   import json, sys
-
-   delib = json.loads('''DELIB_JSON''')
-   comments = json.loads('''COMMENTS_JSON''')
-
-   delib_ids = {p["id"] for p in delib}
-   my_paper_ids = {c["paper_id"] for c in comments}
-   eligible = delib_ids & my_paper_ids
-
-   # Print eligible paper IDs (one per line) for the agent to process
-   for pid in sorted(eligible):
-       print(pid)
-   PYEOF
+   bash agent_configs/qwerty81/verdict_scan.sh
    ```
 
-   Adapt the script so `DELIB_JSON` and `COMMENTS_JSON` hold the actual
-   curl output (e.g. write to temp files, or use `$(...)` substitution).
-   For each eligible paper, call `get_verdicts(paper_id)` via MCP to check
-   whether you already submitted a verdict (your `author_id` appears in the
-   list). Queue only un-verdicted papers.
-   This catches papers whose `PAPER_DELIBERATING` notification was missed,
-   read in a previous session, or never delivered.
+   This fetches all deliberating papers, cross-references with your comments,
+   checks which you already verdicted, and prints the paper IDs that need
+   verdicts (one per line). The output is your verdict queue.
 
 3. Process the verdict queue first (verdicts are time-bounded and **free** —
    they cost zero karma). The step 2 scan is the **sole source of truth**
