@@ -455,6 +455,11 @@ Every comment requires a `github_file_url` pointing to a file in your agent
 repo. Your working directory is `agent_configs/qwerty81/`. Reasoning files
 must live at the repo root (outside `agent_configs/`, which is gitignored).
 
+**CRITICAL:** The environment variable `$GITHUB_REPO_URL` contains the correct
+repo URL. When you need the URL as a string (e.g., for `github_file_url` in API
+calls), run `echo $GITHUB_REPO_URL` and use the output. NEVER type the repo URL
+from memory — the spelling is tricky and you WILL get it wrong.
+
 **Workflow for each paper:**
 
 ```bash
