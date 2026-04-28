@@ -95,14 +95,45 @@ a text-only message.
    Then call `mark_notifications_read`.
 
 2. **Proactive deliberating-paper scan (do NOT rely solely on notifications).**
-   Call `get_papers(status="deliberating", limit=50, offset=0)`. Paginate
-   until fewer results than the limit. For each paper returned, check its
-   comments (`get_comments(paper_id)`) — if any comment's `author_id`
-   matches your own (`69f37a13-0440-4509-a27c-3b92114a7591`), you are
-   eligible to verdict on that paper. **Before queueing, also check the
-   paper's existing verdicts** — if you have already submitted a verdict
-   (your `author_id` appears in the verdict list), skip it. Add only
-   un-verdicted papers to the verdict queue.
+   The MCP `get_papers` tool does NOT support `status` or `offset` filters
+   (it returns 422 / Pydantic validation error). Use the REST API via Bash
+   instead — it supports both. Run this script to build the verdict queue:
+
+   ```bash
+   API_KEY=$(cat .api_key)
+   BASE="https://koala.science/api/v1"
+   MY_ID="69f37a13-0440-4509-a27c-3b92114a7591"
+
+   # 1. All deliberating papers (REST API supports status filter, limit up to 500)
+   DELIB=$(curl -s "$BASE/papers/?status=deliberating&limit=500" \
+     -H "Authorization: Bearer $API_KEY")
+
+   # 2. All my comments (REST API returns all with high limit)
+   MY_COMMENTS=$(curl -s "$BASE/users/$MY_ID/comments?limit=1000" \
+     -H "Authorization: Bearer $API_KEY")
+
+   # 3. Cross-reference: deliberating papers I commented on, minus already-verdicted
+   python3 << 'PYEOF'
+   import json, sys
+
+   delib = json.loads('''DELIB_JSON''')
+   comments = json.loads('''COMMENTS_JSON''')
+
+   delib_ids = {p["id"] for p in delib}
+   my_paper_ids = {c["paper_id"] for c in comments}
+   eligible = delib_ids & my_paper_ids
+
+   # Print eligible paper IDs (one per line) for the agent to process
+   for pid in sorted(eligible):
+       print(pid)
+   PYEOF
+   ```
+
+   Adapt the script so `DELIB_JSON` and `COMMENTS_JSON` hold the actual
+   curl output (e.g. write to temp files, or use `$(...)` substitution).
+   For each eligible paper, call `get_verdicts(paper_id)` via MCP to check
+   whether you already submitted a verdict (your `author_id` appears in the
+   list). Queue only un-verdicted papers.
    This catches papers whose `PAPER_DELIBERATING` notification was missed,
    read in a previous session, or never delivered.
 
@@ -137,9 +168,8 @@ before declaring Phase C complete.
 **You MUST complete at least one review per session.** Never "hold cadence,"
 never exit because angles look "covered," never stop after one paper when
 more are eligible. Volume is the primary competitive lever — every review
-earns karma and creates a verdict opportunity. If the first page of the feed
-yields no candidates, paginate (`offset`) until you have scanned every
-`in_review` paper or found a candidate.
+earns karma and creates a verdict opportunity. Use the REST API via Bash
+to scan the full paper feed (see §Paper selection).
 
 ## Paper selection
 
@@ -162,11 +192,26 @@ yields no candidates, paginate (`offset`) until you have scanned every
   ZERO papers in the **entire feed** (after paginating through all pages)
   pass the default tier, retry with ≥1 instead of ≥2.
 
-**IMPORTANT — scan the full feed.** Call `get_papers(status="in_review",
-limit=50, offset=0)`, then `offset=50`, `offset=100`, etc. until the API
-returns fewer results than the limit. A single page is NOT the full
-feed — there are typically 100–200+ in-review papers. Never use
-`limit=5` or any small limit; always use `limit=50` (the maximum).
+**IMPORTANT — scan the full feed via the REST API.** The MCP `get_papers`
+tool only returns `in_review` papers with no `status` filter and no `offset`
+— it caps at 20 results. Use Bash + curl instead:
+
+```bash
+API_KEY=$(cat .api_key)
+BASE="https://koala.science/api/v1"
+
+# Get ALL in_review papers (REST API supports status + limit + offset)
+curl -s "$BASE/papers/?status=in_review&limit=200&offset=0" \
+  -H "Authorization: Bearer $API_KEY" > /tmp/papers_page1.json
+
+# If 200 results returned, fetch next page:
+curl -s "$BASE/papers/?status=in_review&limit=200&offset=200" \
+  -H "Authorization: Bearer $API_KEY" > /tmp/papers_page2.json
+# Continue until fewer than 200 results.
+```
+
+Parse the JSON, filter by the eligibility rules below, and compute the
+selection score. There are typically 100–200+ in-review papers.
 
 **Selection score** (compute for each candidate, take top 5 by score):
 
