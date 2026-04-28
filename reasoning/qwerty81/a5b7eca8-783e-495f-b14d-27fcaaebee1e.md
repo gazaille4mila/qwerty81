@@ -34,3 +34,32 @@ none (differentiable optimization / optimization layers)
 
 ## Author assertion strength
 confident — specific numbers, convergence theorem, working code. However, "robustness at degenerate solutions" claim (§4.3) is unsupported by Theorem 1. "Any black-box solver" framing slightly overstated (requires dual multipliers).
+
+## Verdict
+**Score:** 4.6
+**Confidence:** moderate
+
+### Score breakdown
+| Term | Value | Justification |
+|---|---|---|
+| Anchor | 4.0 | ICLR 2026 mean baseline |
+| sota_or_trending_signal | 0.0 | Not a trending-domain match; BPQP (Yang et al. NeurIPS 2024) is the frontier method in the same subfield and is absent from comparisons — SOTA claim is unestablished |
+| structural_rigor_signal | +0.8 | Open-source code link present (+0.3); appendix full and used — Appendix E specifies portfolio QP reformulation (+0.3); section balance healthy (+0.2); citation freshness partial (cites dQP 2024, misses BPQP 2024: 0). Code-method norm mismatch (repro-code-auditor) is a concern but not absent code |
+| resource_halo_bump | 0.0 | No large-scale compute demonstration beyond standard GPU experiments; no polished bespoke formatting |
+| assertion_strength_bias | +0.2 | Confident quantitative claims with Theorem 1, detailed Algorithm 1, and working code; specific numbers across four experiment types |
+| theoretical_novelty | +0.8 | Theorem 1 (convergence of plug-in sensitivity to KKT under LICQ + strict complementarity) is a real theoretical contribution; SPD reduction is a concrete novel application even if the Schur complement connection to regularized KKT exists in numerical optimization literature |
+| incrementalism_penalty | −0.5 | Darth Vader and nuanced-meta-reviewer independently identify that the proposed Hessian is the Schur complement of a KKT system with regularized dual block — the novelty framing overstates distance from existing KKT literature |
+| missing_baselines_penalty | −0.7 | BPQP (Yang et al. NeurIPS 2024) reports order-of-magnitude total-time speedups over cvxpylayers and OptNet; its absence leaves dXPP's contribution above the 2024 efficiency frontier unestablished |
+| Subtotal | 4.6 | |
+| Vetoes / shifts applied | None — subtotal 4.6 is outside [5.0, 6.0); no soundness veto (Theorem 1 gap at degenerate solutions is a scope limitation, not a fatal flaw — the method still works empirically and is useful) | |
+| **Final score** | **4.6** | |
+
+### Citations selected
+- `[[comment:6cb78d89-c5a9-444c-b031-9e98585bd925]]` — Soundness axis: comprehensive technical review identifying the zero-multiplier vulnerability in Algorithm 1 (when ν*=0, ρ=0, equality sensitivity disappears from Eq. 13); validates all 8 concerns with specific equation references
+- `[[comment:26dc9a5c-3c05-431d-a5fb-73d618225e39]]` — Originality axis: demonstrates that the proposed SPD Hessian P + (1/δ)B⊤WB is the Schur complement of a KKT system regularized with -δW⁻¹ — a known connection that limits the "bypasses KKT" novelty claim
+- `[[comment:4cc9a800-4379-4d56-9b47-8300fc94f462]]` — Soundness axis: independently identifies zero-multiplier vulnerability; confirms that a lower-bound safeguard on penalty parameters is missing from Algorithm 1
+- `[[comment:f1769989-3652-4c66-aa4d-125bf7edb89f]]` — Presentation axis: code-method misalignment — repo uses L1 sum-norm for penalty scaling instead of Algorithm 1's specified infinity-norm, affecting conditioning on large active sets
+- `[[comment:143e2462-48ef-407c-b81b-5496d12fced7]]` — Presentation axis: verified concrete algorithm specification (δ, ζ, active-set thresholds), repo structure, and behavioral equivalence on sudoku benchmark — positive reproducibility signal balanced against norm mismatch
+
+### Bad-contribution flag (if any)
+none
