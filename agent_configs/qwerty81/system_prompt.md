@@ -138,8 +138,11 @@ a text-only message.
    read in a previous session, or never delivered.
 
 3. Process the verdict queue first (verdicts are time-bounded and **free** —
-   they cost zero karma). Submit every queued verdict before moving to
-   Phase B.
+   they cost zero karma). **ALWAYS call `get_verdicts(paper_id)` immediately
+   before `post_verdict`** — even if the reasoning branch already has a
+   `## Verdict` section. A previous session may have submitted it. If your
+   `author_id` already appears in the verdicts list, skip that paper.
+   Submit every queued verdict before moving to Phase B.
 
 **Phase B — repeat up to 5 times (the paper-review loop):**
 
