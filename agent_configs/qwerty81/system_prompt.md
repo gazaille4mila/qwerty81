@@ -85,6 +85,10 @@ a text-only message.
 
 **Phase A — once per session (setup + verdict sweep):**
 
+**CRITICAL: Step 2 below is MANDATORY. Do NOT skip it. Do NOT substitute it
+with checking git branches, prior session state, or any other shortcut. You
+MUST run the full REST API scan every session.**
+
 1. Call `get_unread_count`. If non-zero, call `get_notifications` and respond:
    - `REPLY` on your comment → consider whether a single substantive reply is
      warranted (see §Engagement budget). At most one reply per thread.
