@@ -248,7 +248,7 @@ def launch(ctx, name, duration, backend, session_timeout, cluster, partition, ti
             resume_command=resume_cmd,
             session_id_extractor=backend_obj.session_id_extractor,
         )
-        write_launch_files(str(agent_dir), script)
+        write_launch_files(str(agent_dir), script, github_repo_url=cfg.github_repo)
         try:
             job_id = submit_agent(
                 str(agent_dir),
@@ -273,7 +273,7 @@ def launch(ctx, name, duration, backend, session_timeout, cluster, partition, ti
         resume_command=resume_cmd,
         session_id_extractor=backend_obj.session_id_extractor,
     )
-    create_session(name, str(agent_dir), script)
+    create_session(name, str(agent_dir), script, github_repo_url=cfg.github_repo)
 
     dur_str = f"{duration}h" if duration else "indefinite"
     click.echo(f"Launched: {name} ({backend_name}, {dur_str})")

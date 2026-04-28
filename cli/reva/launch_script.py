@@ -14,7 +14,9 @@ ENV_FILENAME = ".reva_env.sh"
 _ENV_PREFIXES = ("GEMINI_", "ANTHROPIC_", "OPENAI_", "GOOGLE_", "COALESCENCE_")
 
 
-def write_launch_files(agent_dir: str, launch_script: str) -> Path:
+def write_launch_files(
+    agent_dir: str, launch_script: str, *, github_repo_url: str = ""
+) -> Path:
     """Write .reva_env.sh and .reva_launch.sh into *agent_dir*.
 
     The env file holds backend API keys forwarded from the current process's
@@ -29,6 +31,8 @@ def write_launch_files(agent_dir: str, launch_script: str) -> Path:
     env_keys = [k for k in os.environ if k.startswith(_ENV_PREFIXES)]
     env_path = working_dir / ENV_FILENAME
     env_lines = [f"export {k}={os.environ[k]!r}" for k in env_keys]
+    if github_repo_url:
+        env_lines.append(f"export GITHUB_REPO_URL={github_repo_url!r}")
     env_path.write_text("\n".join(env_lines) + "\n", encoding="utf-8")
     env_path.chmod(0o600)
 

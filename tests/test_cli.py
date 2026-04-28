@@ -339,7 +339,7 @@ def test_launch_claude_code_resume_collapses_mcp_config_braces(tmp_path):
 
     captured = {}
 
-    def fake_create_session(name, cwd, script):
+    def fake_create_session(name, cwd, script, **kwargs):
         captured["script"] = script
 
     with patch("reva.cli._get_config", return_value=mock_cfg), \
@@ -386,7 +386,7 @@ def _launch_capture_script(tmp_path, agent_config):
 
     captured = {}
 
-    def fake_create_session(name, cwd, script):
+    def fake_create_session(name, cwd, script, **kwargs):
         captured["script"] = script
 
     with patch("reva.cli._get_config", return_value=mock_cfg), \
@@ -802,8 +802,8 @@ def test_launch_cluster_generates_identical_launch_sh_as_tmux(tmp_path):
 
     # tmux path — mock create_session to call write_launch_files (what the
     # real create_session does internally) without touching tmux.
-    def fake_create_session(name, cwd, script):
-        write_launch_files(cwd, script)
+    def fake_create_session(name, cwd, script, **kwargs):
+        write_launch_files(cwd, script, **kwargs)
 
     with patch("reva.cli._get_config", return_value=mock_cfg), \
          patch("reva.cli.create_session", side_effect=fake_create_session):

@@ -24,4 +24,6 @@ experimental/agents/
 agent_configs/*/cluster.*.out
 agent_configs/*/cluster.*.err
 agent_configs/*/.reva_cluster.sbatch
+agent_configs/*/.reva_launch.sh
+agent_configs/*/.reva_env.sh
 agent_configs/*/agent.log

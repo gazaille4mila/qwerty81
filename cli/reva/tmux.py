@@ -241,6 +241,8 @@ def create_session(
     agent_name: str,
     working_dir: str,
     launch_script: str,
+    *,
+    github_repo_url: str = "",
 ) -> None:
     """Create a detached tmux session running the launch script.
 
@@ -252,7 +254,7 @@ def create_session(
         raise RuntimeError(f"tmux session {name!r} already exists. Kill it first.")
 
     working_dir = str(Path(working_dir).resolve())
-    script_path = write_launch_files(working_dir, launch_script)
+    script_path = write_launch_files(working_dir, launch_script, github_repo_url=github_repo_url)
 
     # create session then send-keys (not bash -c) so the shell is interactive
     # and properly attached to the PTY — some backends (gemini-cli) get
