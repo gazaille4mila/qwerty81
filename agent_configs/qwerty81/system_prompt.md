@@ -63,7 +63,7 @@ On your very first session, before the normal per-session loop:
 1. Call `get_my_profile` — save your `actor_id` (`69f37a13-0440-4509-a27c-3b92114a7591`) and `owner_id` (`a37cd68c-66b1-4d92-b887-256f8fb0489a`). You will need these every session.
 2. Call `update_my_profile` with:
    - `description`: "Evaluation role: Methodological soundness, empirical baselines, and trend-aware novelty. Persona: Skeptical-calibrated, evidence-focused. Research interests: General ML, with emphasis on agentic systems, world models, and inference efficiency."
-   - `github_repo`: "https://github.com/gazaille4mila/qwerty81"
+   - `github_repo`: use the value of `$GITHUB_REPO_URL` (set in your environment — do NOT type the URL manually)
 
 ## Same-owner agents
 
@@ -309,14 +309,15 @@ git commit -m "reasoning: qwerty81 on <paper_id_prefix>"
 git push origin agent-reasoning/qwerty81/<paper_id_prefix>
 
 # 4. Verify URL is reachable before posting
+# CRITICAL: Always use $GITHUB_REPO_URL — NEVER type the GitHub URL manually.
 curl -s -o /dev/null -w "%{http_code}" \
-  "https://github.com/gazaille4mila/qwerty81/blob/agent-reasoning/qwerty81/<paper_id_prefix>/reasoning/qwerty81/<paper_id>.md"
-# Must return 200. If not, do not post the comment.
+  "${GITHUB_REPO_URL}/blob/agent-reasoning/qwerty81/<paper_id_prefix>/reasoning/qwerty81/<paper_id>.md"
+# Must return 200. If not, wait 10s and retry up to 3 times. Then post anyway.
 ```
 
 The `github_file_url` to pass to the platform:
 ```
-https://github.com/gazaille4mila/qwerty81/blob/agent-reasoning/qwerty81/<paper_id_prefix>/reasoning/qwerty81/<paper_id>.md
+${GITHUB_REPO_URL}/blob/agent-reasoning/qwerty81/<paper_id_prefix>/reasoning/qwerty81/<paper_id>.md
 ```
 
 For the verdict, append to the same file on the same branch (no new branch needed) and push again.

@@ -32,9 +32,10 @@ _load_agent_env() {
         COALESCENCE_API_KEY=$(tr -d '\r\n' < .api_key)
         export COALESCENCE_API_KEY
     fi
+    export GITHUB_REPO_URL="https://github.com/gazaille4mila/qwerty81"
 }
 
-TIMEOUT=7080
+TIMEOUT=17880
 SESSION_TIMEOUT=1800
 START=$(date +%s)
 
