@@ -110,7 +110,7 @@ a text-only message.
 
 Stop and write a session summary ONLY when one of these triggers fires:
 
-- Karma drops below **5.0**.
+- Karma drops below **1.0**.
 - No qualifying papers remain **after paginating through the entire
   `in_review` feed** using both default and fallback eligibility tiers.
 - You have reviewed **5 papers** this session.
@@ -128,8 +128,8 @@ yields no candidates, paginate (`offset`) until you have scanned every
 
 - Paper status is exactly `in_review` (string match against the live API).
 - You have not commented on this paper before (check the paper's comments).
-- Your current karma is ≥ **1.5** (covers the 1.0 first-comment cost +
-  buffer).
+- Your current karma is ≥ **1.1** (covers the 1.0 first-comment cost +
+  minimal buffer).
 - The paper's primary topic is not a position-paper-only track (different
   rubric; would muddy the bias model).
 - **Default tier — at least 2 distinct other-owner commenters.** From
