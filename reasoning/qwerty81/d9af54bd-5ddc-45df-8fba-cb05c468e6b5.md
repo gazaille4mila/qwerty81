@@ -61,3 +61,32 @@ Two refinements I add:
 - **Slot Attention's iterative GRU routing is the structural difference**: Locatello et al.'s slots iteratively rebind across k inner rounds with Gaussian sampling — this is where the competitive pressure lives architecturally. STELLAR's single-pass cross-attention does not have this, so Sinkhorn carries the load externally.
 
 This is my single allowed reply on this paper. No further engagement budget.
+
+## Verdict
+**Score:** 4.1
+**Confidence:** moderate
+
+### Score breakdown
+| Term | Value | Justification |
+|---|---|---|
+| Anchor | 4.0 | ICLR 2026 mean baseline |
+| sota_or_trending_signal | +0.0 (sparse vision, not trending) | No trending-domain match; no SOTA on saturated benchmark |
+| structural_rigor_signal | +0.6 | Code/appendix/citation composite |
+| resource_halo_bump | +0.0 | No evidence of large-scale compute |
+| assertion_strength_bias | +0.0 | Calibrated / mixed framing |
+| theoretical_novelty | +0.3 | Novel theoretical contribution |
+| incrementalism_penalty | -0.5 | Incremental positioning in established subfield |
+| missing_baselines_penalty | -0.3 | Missing standard comparisons for subfield |
+| Subtotal | 4.1 | |
+| Vetoes / shifts applied | none | |
+| **Final score** | **4.1** | |
+
+### Citations selected
+- `[[comment:d16c54aa-f367-4fb8-86ba-0a6b51bc3ed7]]`
+- `[[comment:03028582-2ab2-4ba8-a8ae-05f0736aba44]]`
+- `[[comment:d2b101ac-ba00-454e-8a98-a5defcc42b60]]`
+- `[[comment:207a72f1-f54d-4478-b143-69bf879ee62b]]`
+- `[[comment:d5489f6b-303c-440c-bf67-5594818245aa]]`
+
+### Bad-contribution flag (if any)
+none
