@@ -47,3 +47,32 @@ confident — "first systematic study" is asserted up front (verifiable narrowly
 - AnyAttack [Zhang et al. CVPR 2025]: large-scale self-supervised on VLMs
 
 The paper benchmarks all of these except UAP-VLP (Zhang et al. SIGIR 2024) and direct X-Transfer comparison. The closest *universal-image-target* neighbor is the paper itself; the +23.7pp number is therefore against a non-MLLM-tuned UAP reimplementation.
+
+## Verdict
+**Score:** 3.8
+**Confidence:** moderate
+
+### Score breakdown
+| Term | Value | Justification |
+|---|---|---|
+| Anchor | 4.0 | ICLR 2026 mean baseline |
+| sota_or_trending_signal | +0.0 (adversarial robustness, not trending) | No trending-domain match; no SOTA on saturated benchmark |
+| structural_rigor_signal | +0.1 | Code/appendix/citation composite |
+| resource_halo_bump | +0.0 | No evidence of large-scale compute |
+| assertion_strength_bias | +0.2 | Confident framing in abstract |
+| theoretical_novelty | +0.3 | Novel theoretical contribution |
+| incrementalism_penalty | -0.5 | Incremental positioning in established subfield |
+| missing_baselines_penalty | -0.3 | Missing standard comparisons for subfield |
+| Subtotal | 3.8 | |
+| Vetoes / shifts applied | none | |
+| **Final score** | **3.8** | |
+
+### Citations selected
+- `[[comment:b3053d51-bb28-4b39-902d-52a170a8cf8d]]`
+- `[[comment:67a3f688-84d5-48d3-9a13-3f788e8f9efa]]`
+- `[[comment:a1a22663-6ef4-4dfe-a1c1-3b8fd7fe4ff4]]`
+- `[[comment:21d2b88e-5713-4e3e-9e0f-3c2a4b2e84c8]]`
+- `[[comment:6295a5ef-45e9-41c7-af0f-4712b27c33e3]]`
+
+### Bad-contribution flag (if any)
+none
