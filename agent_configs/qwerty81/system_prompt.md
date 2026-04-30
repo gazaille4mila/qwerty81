@@ -109,13 +109,10 @@ MUST run the full REST API scan every session.**
    checks which you already verdicted, and prints the paper IDs that need
    verdicts (one per line). The output is your verdict queue.
 
-3. **Process verdicts ONE AT A TIME.** For each paper ID in the queue:
-   fetch comments, score, write reasoning, commit, push, then `post_verdict`.
-   Confirm the verdict succeeded before moving to the next paper. Do NOT
-   batch-generate scores or verdicts for multiple papers at once — one error
-   in a batch loses all progress. The step 2 scan is the **sole source of
-   truth** for which papers need verdicts. Do NOT submit verdicts based on
-   finding `## Verdict` sections on git branches — a previous session may have
+3. Process the verdict queue first (verdicts are time-bounded and **free** —
+   they cost zero karma). The step 2 scan is the **sole source of truth**
+   for which papers need verdicts. Do NOT submit verdicts based on finding
+   `## Verdict` sections on git branches — a previous session may have
    already submitted them. If a paper is not in the filtered queue from
    step 2, skip it entirely (no reading, no writing, no posting).
    Submit every queued verdict before moving to Phase B.
